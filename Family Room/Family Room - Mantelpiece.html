@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Family Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #ece4d6;
+    --paper: #ece4d6;
+    --ink: #2a221a;        /* 13:1 on cream — primary text */
+    --ink-soft: #4a4035;   /* 8.5:1 on cream — body text */
+    --ink-mute: #6e6358;   /* 4.7:1 on cream — meta / labels (AA pass) */
+    --ink-faint: #8a7e70;  /* 3:1 — large text only */
+    --warm: #b86348;       /* 5:1 on cream — accent that passes AA */
+    --warm-soft: #c97a5d;  /* decorative only */
+    --good: #4a7a4a;       /* 5.4:1 on cream */
+    /* neumorphism shadows tuned to cream */
+    --neu-light: rgba(255,250,238,0.95);
+    --neu-dark:  rgba(120,95,60,0.30);
+    --neu-out:   -8px -8px 18px var(--neu-light), 8px 8px 18px var(--neu-dark);
+    --neu-out-sm:-4px -4px 9px  var(--neu-light), 4px 4px 9px  var(--neu-dark);
+    --neu-in:    inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light);
+    --neu-in-sm: inset 2px 2px 5px var(--neu-dark), inset -2px -2px 5px var(--neu-light);
+  }
+  html, body { margin: 0; padding: 0; background: var(--cream); color: var(--ink); }
+  body {
+    font-family: "Inter", -apple-system, system-ui, sans-serif;
+    background:
+      /* warm sun bleed top-left, secondary glow bottom-right */
+      radial-gradient(ellipse 65% 45% at 12% -2%, rgba(255,215,160,0.42) 0%, rgba(245,200,140,0.18) 30%, transparent 65%),
+      radial-gradient(ellipse 40% 30% at 90% 100%, rgba(201,122,93,0.10) 0%, transparent 60%),
+      var(--cream);
+    min-height: 100vh;
+    position: relative;
+  }
+  .page { max-width: 1620px; margin: 0 auto; padding: 56px 40px 100px; position: relative; z-index: 5; }
+
+  /* ─── Daylight Computer effect: three layers ─────────────────────── */
+
+  /* Layer 2 — Sunlight rays (multiply blend). Animated SVG conic+linear streaks. */
+  .sunlight {
+    position: fixed; inset: 0; pointer-events: none;
+    z-index: 100; mix-blend-mode: multiply; opacity: 0.85;
+    background-image:
+      /* primary diagonal beam */
+      linear-gradient(118deg,
+        rgba(255,255,255,1) 0%,
+        rgba(255,255,255,1) 28%,
+        rgba(255,228,180,0.78) 36%,
+        rgba(255,210,150,0.62) 42%,
+        rgba(255,255,255,1) 52%,
+        rgba(255,255,255,1) 100%),
+      /* secondary thin ray */
+      linear-gradient(112deg,
+        rgba(255,255,255,1) 0%,
+        rgba(255,255,255,1) 58%,
+        rgba(255,225,170,0.55) 64%,
+        rgba(255,255,255,1) 70%,
+        rgba(255,255,255,1) 100%),
+      /* soft warm vignette top-left */
+      radial-gradient(ellipse 70% 55% at 8% -8%,
+        rgba(255,210,150,0.55) 0%,
+        rgba(255,235,200,0.92) 35%,
+        rgba(255,255,255,1) 70%);
+    background-blend-mode: multiply, multiply, normal;
+    animation: sunDrift 32s ease-in-out infinite alternate;
+  }
+  @keyframes sunDrift {
+    0%   { background-position: 0% 0%, 0% 0%, 0% 0%; opacity: 0.78; }
+    50%  { background-position: 1% 0.5%, -1% 0.3%, 0.4% -0.2%; opacity: 0.92; }
+    100% { background-position: 2% 1%, -2% 0.6%, 0.8% -0.4%; opacity: 0.82; }
+  }
+
+  /* Layer 3 — Film grain (overlay blend) via SVG turbulence. Static. */
+  .grain {
+    position: fixed; inset: 0; pointer-events: none;
+    z-index: 500; mix-blend-mode: overlay; opacity: 0.42;
+    background-color: #777;
+    filter: url(#fr-grain);
+  }
+  /* slightly coarser secondary halftone for visible texture even on mid-tones */
+  .grain-coarse {
+    position: fixed; inset: 0; pointer-events: none;
+    z-index: 501; mix-blend-mode: soft-light; opacity: 0.32;
+    background-image:
+      radial-gradient(rgba(40,30,20,0.55) 0.5px, transparent 0.6px),
+      radial-gradient(rgba(40,30,20,0.35) 0.5px, transparent 0.6px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1.5px 1.5px;
+  }
+
+  .kicker {
+    font-family: "Inter", sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: 1.4px;
+    color: var(--warm); text-transform: uppercase;
+  }
+  h1.hero {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-size: 76px; line-height: 1; margin: 12px 0 18px;
+    letter-spacing: -2px; font-weight: 500; color: var(--ink);
+  }
+  h1.hero em { font-style: italic; font-weight: 400; }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--ink-soft); max-width: 600px; }
+
+  hr { border: none; border-top: 0.5px solid rgba(40,30,20,0.12); margin: 72px 0 32px; }
+
+  .section-kicker { font-size: 11.5px; font-weight: 600; letter-spacing: 1.4px;
+    color: var(--ink-mute); text-transform: uppercase; margin-bottom: 4px; }
+  h2.section { font-family: "Fraunces", serif; font-size: 38px; line-height: 1.05;
+    margin: 0; letter-spacing: -1px; font-weight: 500; color: var(--ink); }
+  .section-sub { font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 640px; margin-top: 10px; }
+
+  .stage { display: flex; justify-content: center; margin-top: 32px; padding: 4px; overflow-x: auto; }
+  .stage.row { gap: 40px; }
+
+  /* Accessibility — focus rings on every interactive surface inside the prototype */
+  button:focus-visible, [role="button"]:focus-visible,
+  input:focus-visible, [tabindex]:focus-visible {
+    outline: 2.5px solid var(--warm);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  /* Honor reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .sunlight { animation: none !important; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  /* Visible-only-to-screen-readers helper */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+
+<!-- SVG turbulence filter for the grain overlay -->
+<svg style="position:fixed;width:0;height:0" aria-hidden="true">
+  <filter id="fr-grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" seed="4"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="1.4"/></feComponentTransfer>
+  </filter>
+</svg>
+
+<div class="sunlight" aria-hidden="true"></div>
+<div class="grain-coarse" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="components/icons.jsx"></script>
+<script type="text/babel" src="components/familyroom.jsx"></script>
+<script type="text/babel" src="components/familyroom-shared.jsx"></script>
+<script type="text/babel" src="components/familyroom-albums.jsx"></script>
+<script type="text/babel" src="components/familyroom-people.jsx"></script>
+<script type="text/babel" src="components/familyroom-editor.jsx"></script>
+<script type="text/babel" src="components/familyroom-theater.jsx"></script>
+<script type="text/babel" src="components/familyroom-manager.jsx"></script>
+<script type="text/babel" src="components/familyroom-library.jsx"></script>
+<script type="text/babel" src="components/familyroom-dvd.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <div className="page">
+      <div className="kicker">Family Room · Vol. III</div>
+      <h1 className="hero">Less <em>museum</em>,<br/>more <em>kitchen counter</em>.</h1>
+      <p className="lede">
+        Same bones as before — the family is the navigation, time is the layout. But now it
+        feels like an app a regular family would actually open. Warmer, softer, less precious.
+        The river of time is still the hero, but it reads like a feed, not an exhibit.
+      </p>
+
+      <hr/>
+      <div className="section-kicker">01 · Mac</div>
+      <h2 className="section">The home view.</h2>
+      <p className="section-sub">
+        Cora is logged in and has filtered the year to herself. Real-feeling photos, a friendly
+        sidebar of the five people, and a "shared this week" strip below — the things you actually
+        check when you sit down with coffee.
+      </p>
+      <div className="stage" data-screen-label="01 Mac home"><MacMain /></div>
+
+      <hr/>
+      <div className="section-kicker">02 · iPhone</div>
+      <h2 className="section">In your pocket.</h2>
+      <p className="section-sub">
+        The phone is where you'll actually live in this app. People row at the top, a hero card for
+        what's new, and a quiet "On this day" strip — the kind of thing you scroll once a day at
+        breakfast.
+      </p>
+      <div className="stage row">
+        <div data-screen-label="02 Phone — feed"><PhoneFeed /></div>
+        <div data-screen-label="03 Phone — a moment"><PhoneMoment /></div>
+      </div>
+
+      <hr/>
+      <div className="section-kicker">03 · iPad</div>
+      <h2 className="section">On the kitchen counter.</h2>
+      <p className="section-sub">
+        Lives propped up on the counter or on the coffee table. A bigger canvas means the river can
+        breathe — and Iris can keep her own scrapbook on the same device the whole family shares.
+      </p>
+      <div className="stage" data-screen-label="04 iPad — landing"><IPadLanding /></div>
+
+      <hr/>
+      <div className="section-kicker">04 · Albums</div>
+      <h2 className="section">Building an album.</h2>
+      <p className="section-sub">
+        Drag from the library on the left, the cover sets itself, and anyone you tag as a
+        collaborator can add their own photos. Visibility is family by default; friend groups and
+        private collaborators only are one click away.
+      </p>
+      <div className="stage" data-screen-label="05 Albums — creator"><AlbumCreator /></div>
+
+      <hr/>
+      <div className="section-kicker">05 · People</div>
+      <h2 className="section">Faces, kindly sorted.</h2>
+      <p className="section-sub">
+        On-device face grouping you confirm or correct — never trained against your library
+        without your say. The review queue keeps it gentle: one suggestion at a time, with a
+        clear way to merge people you've already named.
+      </p>
+      <div className="stage" data-screen-label="06 People — identifier"><PeopleIdentifier /></div>
+
+      <hr/>
+      <div className="section-kicker">06 · Editor</div>
+      <h2 className="section">From a moment to a short film.</h2>
+      <p className="section-sub">
+        A real timeline — clips, music, titles, transitions — but with sane defaults. Auto-fit to
+        the song, auto-duck the music under voices, save it as a Memory the rest of the family
+        can watch on their TV.
+      </p>
+      <div className="stage" data-screen-label="07 Editor — memory"><MemoryEditor /></div>
+
+      <hr/>
+      <div className="section-kicker">07 · Memories</div>
+      <h2 className="section">The family theater.</h2>
+      <p className="section-sub">
+        Hand-edited films plus a quiet weekly auto-reel ("the week, in a minute") that we keep
+        for two weeks unless you save it. Cast to Apple TV from any device.
+      </p>
+      <div className="stage" data-screen-label="08 Memories — theater"><MemoryTheater /></div>
+
+      <hr/>
+      <div className="section-kicker">08 · Family manager</div>
+      <h2 className="section">More than one family. Quieter friend groups.</h2>
+      <p className="section-sub">
+        Cora is in The Alderhouse and married into the Morimotos — the app respects that. Friend
+        groups are smaller circles for sharing specific moments without joining anyone's
+        whole life.
+      </p>
+      <div className="stage" data-screen-label="09 Family — manager"><FamilyManager /></div>
+
+      <hr/>
+      <div className="section-kicker">09 · Library</div>
+      <h2 className="section">The wall, scattered.</h2>
+      <p className="section-sub">
+        From the napkin sketch — Family Room and the year buttons on the left, a wall of slightly
+        tilted polaroids on the right, and a slim pill of colored event dots at the bottom. Years
+        scope the wall; the timeline scrubs to a moment. The polaroid corners are rotated by hand
+        so the grid feels lived-in.
+      </p>
+      <div className="stage" data-screen-label="10 Library — scatter"><LibraryScatter /></div>
+
+      <hr/>
+      <div className="section-kicker">10 · The Vault (early-2000s nostalgia)</div>
+      <h2 className="section">The old DVDs, exactly as you remember them.</h2>
+      <p className="section-sub">
+        For the camcorder tapes Margot digitized in 2008 — we render the menu the way the discs
+        used to look. Glossy chrome buttons, scene-selection grid, that thin gold serif type, a
+        scanline-flecked CRT. Click <em>Play All</em> and the tape starts; the rest of the app
+        gets out of the way.
+      </p>
+      <div className="stage" data-screen-label="11 DVD — vault"><DvdMenu /></div>
+
+      <hr/>
+      <p style={{ maxWidth: 640, fontSize: 16, lineHeight: 1.6, color: 'var(--ink-soft)' }}>
+        Two more directions. The wall pulls neumorphism toward
+        <em> tactile paper</em> — soft inset wells holding objects you can almost pick up. The
+        Vault leans the other way: away from soft surfaces, into the chunky beveled chrome of the
+        early 2000s, because that's how those memories actually looked the first time you saw
+        them on TV.
+      </p>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

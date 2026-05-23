@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Family Room — Cozy Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; font-family: "SF Pro Rounded", ui-rounded, -apple-system, system-ui, sans-serif; color: #3a1810; }
+  /* 2000s nostalgic — sun-bleached peach→aqua→lilac, like a scanned polaroid */
+  body {
+    background: #f2c9a8;
+    background-image:
+      /* warm top-left sun wash */
+      radial-gradient(ellipse 70% 55% at 12% -8%, #ffe8c0 0%, #ffcfa0 22%, rgba(255,190,150,0.55) 42%, transparent 68%),
+      /* aqua pool bottom-right — iMac G3 bondi */
+      radial-gradient(ellipse 85% 60% at 100% 108%, #9ed8da 0%, #7bb8cf 32%, rgba(120,160,200,0.45) 55%, transparent 78%),
+      /* powder lilac bloom */
+      radial-gradient(ellipse 60% 50% at 58% 118%, #dcc4e4 0%, rgba(200,180,220,0.5) 40%, transparent 72%),
+      /* peachy sky gradient */
+      linear-gradient(178deg, #ffd9b4 0%, #f4b9a2 28%, #e6a8b4 52%, #bfb4d4 76%, #9cc4cf 100%);
+    min-height: 100vh;
+    position: relative;
+  }
+  /* Window-cast sunlight — a slanted shaft falling from top-left, with a subtle mullion shadow */
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background:
+      /* hot window pane — upper-left, soft-edged parallelogram */
+      radial-gradient(ellipse 38% 55% at 18% 22%, rgba(255,246,210,0.85) 0%, rgba(255,230,170,0.55) 28%, rgba(255,210,150,0.22) 55%, transparent 78%),
+      /* second pane, cooler, a touch further down */
+      radial-gradient(ellipse 26% 38% at 36% 48%, rgba(255,240,200,0.45) 0%, rgba(255,220,180,0.22) 40%, transparent 72%),
+      /* long trailing warmth down the page */
+      linear-gradient(160deg, rgba(255,230,180,0.35) 0%, rgba(255,210,170,0.12) 28%, transparent 55%);
+    mix-blend-mode: screen;
+    filter: blur(2px);
+  }
+  /* Sharper film grain + subtle mullion slats — two layered noise plates + faint diagonal shadow bars */
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background-image:
+      /* faint window-mullion shadow bars slanting down-right (sunlight passing thru frame) */
+      repeating-linear-gradient(118deg,
+        transparent 0px,
+        transparent 230px,
+        rgba(60,40,30,0.045) 230px,
+        rgba(60,40,30,0.045) 236px,
+        transparent 236px,
+        transparent 460px),
+      /* crisp monochrome grain */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.35' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+      /* finer warm grain for color break-up */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='1' seed='12' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.72  0 0 0 0 0.45  0 0 0 0 0.28  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23m)'/></svg>");
+    background-blend-mode: normal, overlay, overlay;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+  }
+  /* Dreamy glass vignette — cool edges, warm center — lives above content but below grain */
+  .atmosphere-vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 150;
+    background:
+      radial-gradient(ellipse 120% 90% at 50% 45%, transparent 55%, rgba(120,150,180,0.18) 85%, rgba(90,110,150,0.32) 100%),
+      radial-gradient(ellipse 60% 40% at 20% 25%, rgba(255,240,210,0.18) 0%, transparent 60%);
+    mix-blend-mode: soft-light;
+  }
+  body.daylight {
+    background: #f5d4b6;
+    background-image:
+      radial-gradient(ellipse 70% 55% at 12% -8%, #fff1d2 0%, #ffd9ae 25%, transparent 65%),
+      radial-gradient(ellipse 85% 60% at 100% 108%, #b2e0e0 0%, #8ec4d4 32%, transparent 78%),
+      radial-gradient(ellipse 60% 50% at 58% 118%, #e4d0ea 0%, transparent 72%),
+      linear-gradient(178deg, #ffe3c0 0%, #f7c6ab 30%, #eeb3ba 55%, #c6bdd8 78%, #a6cdd4 100%);
+  }
+  .page { max-width: 1620px; margin: 0 auto; padding: 56px 40px 140px; position: relative; z-index: 10; }
+
+  .intro { max-width: 760px; }
+  .meta {
+    font-family: "SF Pro Rounded", ui-rounded, system-ui, sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: #a07050; text-transform: uppercase; margin-bottom: 14px;
+  }
+  .intro h1 {
+    font-family: "SF Pro Rounded", ui-rounded, system-ui, sans-serif;
+    font-size: 72px; line-height: 0.96; margin: 0 0 18px;
+    letter-spacing: -1.8px; font-weight: 800; color: #4a2418;
+    text-shadow: 0 1px 0 rgba(255,240,220,0.55), 0 14px 36px rgba(120,70,50,0.12);
+  }
+  .intro p { line-height: 1.6; color: #5a2e1e; font-size: 15px; max-width: 640px; font-weight: 500; text-shadow: 0 1px 0 rgba(255,240,220,0.5); }
+  body.daylight .intro h1 { color: #4a2418; }
+  body.daylight .intro p { color: #5a2e1e; }
+  .meta { color: #8a4a2e; text-shadow: 0 1px 0 rgba(255,240,220,0.5); }
+  .platform-title { color: #3a1810; text-shadow: 0 1px 0 rgba(255,240,220,0.55); }
+  .platform-sub { color: #5a2e1e; text-shadow: 0 1px 0 rgba(255,240,220,0.4); }
+  .cell-label { color: #8a4a2e; text-shadow: 0 1px 0 rgba(255,240,220,0.5); }
+  .cell-title { color: #3a1810; text-shadow: 0 1px 0 rgba(255,240,220,0.45); }
+  .cell-desc { color: #5a2e1e; text-shadow: 0 1px 0 rgba(255,240,220,0.4); }
+
+  .section-divider { border: none; border-top: 0.5px solid rgba(140,80,60,0.18); margin: 80px 0 44px; }
+  .platform-title { font-family: inherit; font-size: 42px; color: #3a1810; font-weight: 700; margin: 0; letter-spacing: -1px; }
+  .platform-sub { font-size: 14px; color: #6a3822; margin-top: 6px; max-width: 580px; line-height: 1.55; font-weight: 500; }
+
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .cell-label { font-size: 11px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: #8a5030; }
+  .cell-title { font-size: 20px; color: #3a1810; font-weight: 700; margin-top: -4px; }
+  .cell-desc { font-size: 13px; color: #6a3822; max-width: 360px; text-align: center; line-height: 1.5; font-weight: 500; }
+
+  .phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 54px 40px; margin-top: 40px; }
+
+  /* swatches */
+  .swatch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 20px; }
+  .swatch { aspect-ratio: 3/2; border-radius: 18px; position: relative; overflow: hidden;
+    box-shadow: inset 0 1.5px 0 rgba(255,245,220,0.5), inset 0 0 0 0.5px rgba(60,20,10,0.12), 0 8px 18px -6px rgba(80,30,15,0.25);
+  }
+  .swatch-label { position: absolute; bottom: 9px; left: 11px; font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+
+  .device-stage { display: flex; justify-content: center; margin-top: 28px; overflow-x: auto; }
+
+  /* tweaks */
+  .tweaks {
+    position: fixed; bottom: 20px; right: 20px; z-index: 300;
+    width: 300px; border-radius: 24px; padding: 18px;
+    background: rgba(244,223,178,0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: inset 0 1.5px 0 rgba(255,245,220,0.55), 0 16px 40px rgba(80,30,15,0.3);
+    display: none;
+  }
+  .tweaks.on { display: block; }
+  .tweaks h3 { font-size: 17px; margin: 0 0 14px; color: #3a1810; font-weight: 700; }
+  .tweak-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px; gap: 10px; }
+  .tweak-row label { font-size: 12px; color: #6a3822; font-weight: 600; flex-shrink: 0; }
+  .tweak-row select, .tweak-row input[type="range"] {
+    font-family: inherit; font-size: 12px; padding: 5px 9px; border-radius: 10px;
+    border: 0.5px solid rgba(140,70,50,0.2); background: rgba(255,245,220,0.7); color: #3a1810; font-weight: 600;
+  }
+  .tweak-row input[type="range"] { width: 130px; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="atmosphere-vignette"></div>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="components/icons.jsx"></script>
+<script type="text/babel" src="components/textures.jsx"></script>
+<script type="text/babel" src="components/materials2.jsx"></script>
+<script type="text/babel" src="components/atmosphere.jsx"></script>
+<script type="text/babel" src="components/ios-frame.jsx"></script>
+<script type="text/babel" src="components/iphone-screens.jsx"></script>
+<script type="text/babel" src="components/albums-composer.jsx"></script>
+<script type="text/babel" src="components/ipad-screens.jsx"></script>
+<script type="text/babel" src="components/mac-screens.jsx"></script>
+<script type="text/babel" src="components/mac-room.jsx"></script>
+
+<script type="text/babel">
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "mode": "natural",
+  "intensity": 0
+}/*EDITMODE-END*/;
+
+function PhoneCell({ label, title, desc, children }) {
+  return (
+    <div className="cell" data-screen-label={label}>
+      <div className="cell-label">{label}</div>
+      <div className="cell-title">{title}</div>
+      {desc && <div className="cell-desc">{desc}</div>}
+      <div style={{ transform: 'scale(0.9)', transformOrigin: 'top center', marginTop: -4, marginBottom: -60 }}>
+        <IOSDevice width={402} height={874} dark={false}>{children}</IOSDevice>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [t, setT] = React.useState(TWEAKS);
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    function h(e) {
+      if (e.data?.type === '__activate_edit_mode') setOpen(true);
+      if (e.data?.type === '__deactivate_edit_mode') setOpen(false);
+    }
+    window.addEventListener('message', h);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', h);
+  }, []);
+
+  React.useEffect(() => {
+    document.body.classList.toggle('daylight', t.mode === 'daylight');
+  }, [t.mode]);
+
+  function update(k, v) {
+    const next = { ...t, [k]: v };
+    setT(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  }
+
+  const mode = t.mode;
+
+  return (
+    <>
+      <MaterialDefs />
+      <TextureDefs />
+      <AtmosphereDefs />
+
+      <div className="page">
+        <div className="intro">
+          <div className="meta">Family Room · v3 · Cozy Glass · April 2026</div>
+          <h1>Soft as the<br/>room you grew<br/>up in.</h1>
+          <p>
+            Native for iPhone, iPad, and Mac. v3 brings the <em>Cozy Glass</em> framework to life — frosted silk, organic colored shadows, spring motion, and fabric that feels pressable. The room is bathed in late-morning window light from the upper-left; a crisp film grain sits over everything; the palette is sun-bleached Y2K — butter, peach, bondi aqua and lilac ice. Open <strong>Tweaks</strong> to switch to Daylight or turn the sun down.
+          </p>
+        </div>
+
+        {/* Palette */}
+        <hr className="section-divider" />
+        <div className="meta">System · the ten textiles</div>
+        <h2 className="platform-title" style={{ fontSize: 30, marginTop: 4 }}>Sun-bleached Y2K — butter, bondi, lilac ice</h2>
+        <div className="swatch-grid">
+          {[
+            { l: 'Butter',     bg: 'radial-gradient(ellipse at 30% 20%, #fff1c8, #f6e0a8 45%, #ecc878)', ink: '#3a1810' },
+            { l: 'Peach',      bg: 'radial-gradient(ellipse at 30% 20%, #ffd2b4, #f6b298 45%, #db8668)', ink: '#3a1810' },
+            { l: 'Shell pink', bg: 'radial-gradient(ellipse at 30% 20%, #fbcfd0, #eeb0b4 45%, #d08a8f)', ink: '#3a1810' },
+            { l: 'Cherry soda',bg: 'radial-gradient(ellipse at 30% 20%, #de7078, #c24a58 45%, #8c2838)', ink: '#fff0e0' },
+            { l: 'Bondi aqua', bg: 'radial-gradient(ellipse at 30% 20%, #b4e4e0, #7cc6c8 45%, #4a98a6)', ink: '#12333a' },
+            { l: 'Seafoam',    bg: 'radial-gradient(ellipse at 30% 20%, #c8e4c4, #9ac8a4 45%, #6a9878)', ink: '#1a3a28' },
+            { l: 'Powder blue',bg: 'radial-gradient(ellipse at 30% 20%, #c4d6ea, #9ab4d4 45%, #6a8ab0)', ink: '#1a2840' },
+            { l: 'Lilac ice',  bg: 'radial-gradient(ellipse at 30% 20%, #e2d0e8, #c4aed0 45%, #9884ac)', ink: '#2a1838' },
+            { l: 'Tangerine',  bg: 'radial-gradient(ellipse at 30% 20%, #ffb280, #f28a54 45%, #c4592a)', ink: '#3a1810' },
+            { l: 'Cream',      bg: 'radial-gradient(ellipse at 30% 20%, #fff4dc, #f2e2c0 45%, #d8c098)', ink: '#3a1810' },
+          ].map((s, i) => (
+            <div key={i} className="swatch" style={{ background: s.bg }}>
+              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.3, mixBlendMode: 'multiply' }} preserveAspectRatio="none"><rect width="100%" height="100%" filter="url(#weave)" fill="black"/></svg>
+              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.2, mixBlendMode: 'multiply' }} preserveAspectRatio="none"><rect width="100%" height="100%" filter="url(#weaveH)" fill="black"/></svg>
+              <div className="swatch-label" style={{ color: s.ink, textShadow: s.ink === '#3a1810' ? 'none' : '0 1px 1px rgba(30,10,5,0.35)' }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* iPhone */}
+        <hr className="section-divider" />
+        <div className="meta">01 · iPhone</div>
+        <h2 className="platform-title">In the pocket</h2>
+        <p className="platform-sub">Five moments: the hearth, browsing by person, on-this-day memories, the albums room, and the video composer with chapters. A bright shaft of sunlight enters from the upper-left like a window cast across the desk; crisp film grain sits over everything; surfaces press like pillows.</p>
+        <div className="phones">
+          <PhoneCell label="01 Room" title="The hearth" desc="Family settee up top, year shelves below. Tap a chip or tile — everything presses like a pillow.">
+            <HomeV2 mode={mode} intensity={t.intensity} />
+          </PhoneCell>
+          <PhoneCell label="02 People" title="By who" desc="Portraits on fabric pillows. Each person is tinted by their textile tone; places below in soft butter.">
+            <OrganizeV2 mode={mode} intensity={t.intensity} />
+          </PhoneCell>
+          <PhoneCell label="03 Memory" title="On this day" desc="A polaroid nested inside a claret frame inside a butter mat. Supporting photos as small textile cards.">
+            <MemoryV2 mode={mode} intensity={t.intensity} />
+          </PhoneCell>
+          <PhoneCell label="04 Albums" title="Collected" desc="Pinned albums at the top, all albums below. 'Auto' badge marks ones Family Room stitched on-device.">
+            <AlbumsV2 mode={mode} intensity={t.intensity} />
+          </PhoneCell>
+          <PhoneCell label="05 Compose" title="Make a film" desc="Stitch videos into one reel with draggable chapters, scrubber ticks per chapter, and on-device suggestions.">
+            <ComposerV2 mode={mode} intensity={t.intensity} />
+          </PhoneCell>
+        </div>
+
+        {/* iPad */}
+        <hr className="section-divider" />
+        <div className="meta">02 · iPad</div>
+        <h2 className="platform-title">At the kitchen table</h2>
+        <p className="platform-sub">Cozy glass sidebar floats over the paper; organize by Years, People, Events, Places, Albums. A claret fabric block anchors the family, while the canvas is cream linen with springy event cards.</p>
+        <div className="device-stage" data-screen-label="04 iPad — year browser">
+          <IPadFrame width={1180} height={820}>
+            <IPadApp mode={mode} intensity={t.intensity} />
+          </IPadFrame>
+        </div>
+
+        {/* Mac */}
+        <hr className="section-divider" />
+        <div className="meta">03 · macOS</div>
+        <h2 className="platform-title">On the desk</h2>
+        <p className="platform-sub">Three panes, all soft: organize in the sidebar, everyone in the center on fabric pillows, and a claret inspector on the right showing everything the room knows about one person.</p>
+        <div className="device-stage" data-screen-label="05 Mac — people inspector">
+          <MacFrame width={1300} height={840}>
+            <MacApp mode={mode} intensity={t.intensity} />
+          </MacFrame>
+        </div>
+
+        {/* Mac — sketch-faithful "Family Room" home */}
+        <div style={{ marginTop: 30 }}>
+          <div className="meta" style={{ marginBottom: 4 }}>03b · macOS · DVD MENU</div>
+          <h2 className="platform-title" style={{ fontSize: 30 }}>Insert Disc — the family on Disc 01</h2>
+          <p className="platform-sub">Throwing out the warm amber for the energy of a 2002 home-theater DVD menu: midnight chrome, neon magenta and cyan, beveled tiles that look like remote-control buttons, CRT scanlines, a marquee ticker for "On This Day", and the family lined up at the bottom like a cast list. PLAY ALL is the primary action; Years are framed as Scene Selection, the Library is Bonus Features.</p>
+        </div>
+        <div className="device-stage" data-screen-label="06 Mac — DVD Menu">
+          <MacRoomFrame width={1300} height={840}>
+            <MacRoomApp selectedYear={2026} selectedPerson="Iris" />
+          </MacRoomFrame>
+        </div>
+
+        <hr className="section-divider" />
+        <div className="meta">What's next</div>
+        <p style={{ maxWidth: 640, lineHeight: 1.55, color: '#5a2e1e', fontSize: 14, fontWeight: 500, textShadow: '0 1px 0 rgba(255,240,220,0.4)' }}>
+          Further passes could develop: Event detail with multi-person tagging and collaborative captions; an empty-state "open the room" moment for onboarding; the Mac menubar "sunset digest"; and an Apple-TV-style slideshow that plays quietly on shared screens.
+        </p>
+      </div>
+
+      <div className={'tweaks' + (open ? ' on' : '')}>
+        <h3>Tweaks</h3>
+        <div className="tweak-row">
+          <label>Light</label>
+          <select value={t.mode} onChange={e => update('mode', e.target.value)}>
+            <option value="natural">Late afternoon (full color)</option>
+            <option value="daylight">Daylight (warm amber)</option>
+          </select>
+        </div>
+        <div className="tweak-row">
+          <label>Sunlight</label>
+          <input type="range" min="0" max="1.5" step="0.05" value={t.intensity}
+            onChange={e => update('intensity', parseFloat(e.target.value))} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
