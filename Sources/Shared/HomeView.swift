@@ -2,120 +2,208 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: AppViewModel
-    
+    @State private var path = NavigationPath()
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    #endif
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ZStack {
-                AdaptiveFabricBackground(type: viewModel.selectedFabric)
-                
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 40) {
-                        // Header
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Home")
-                                .font(.system(size: 34, weight: .black, design: .serif)) // Serif for more traditional feel
-                                .foregroundStyle(FurnitureDesign.walnutWood)
-                            Text("Your Family Memories")
-                                .font(.subheadline)
-                                .foregroundStyle(FurnitureDesign.sageWool)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 40)
-                        
-                        // Featured Album
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Featured Album")
-                                .font(.headline)
-                                .foregroundStyle(FurnitureDesign.walnutWood)
-                                .padding(.horizontal)
-                            
-                            FeaturedAlbumView()
-                                .padding(.horizontal)
-                        }
-                        
-                        // All Albums Grid
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Recent Albums")
-                                .font(.headline)
-                                .foregroundStyle(FurnitureDesign.walnutWood)
-                                .padding(.horizontal)
-                            
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 30) {
-                                ForEach(viewModel.recentEvents) { event in
-                                    NavigationLink(value: event) {
-                                        AlbumStackThumbnail(event: event)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
+                DaylightBackground()
+                content
+            }
+            .navigationDestination(for: Moment.self) { moment in
+                MomentDetailView(moment: moment, viewModel: viewModel)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        #if os(macOS)
+        ScrollView {
+            MantelpieceMacView(viewModel: viewModel, onMomentTap: openMoment)
+        }
+        #else
+        if horizontalSizeClass == .regular {
+            MantelpieceIPadView(viewModel: viewModel, onMomentTap: openMoment)
+        } else {
+            MantelpiecePhoneView(viewModel: viewModel, onMomentTap: openMoment)
+        }
+        #endif
+    }
+
+    private func openMoment(_ m: Moment) {
+        path.append(m)
+    }
+}
+
+// MARK: - Moment detail view
+
+struct MomentDetailView: View {
+    let moment: Moment
+    @ObservedObject var viewModel: AppViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            DaylightBackground()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    ScenePhoto(scene: moment.scene, cornerRadius: 20)
+                        .frame(height: 320)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 8)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionKicker(kicker, color: FurnitureDesign.warmSoft, size: 12, tracking: 0.6)
+                        Text(moment.title)
+                            .font(.mantelDisplay(30, weight: .medium))
+                            .foregroundStyle(FurnitureDesign.ink)
+                        Text(moment.quote ?? "We took the boat out at six. The sky was the color of a peach pit. Iris fell asleep on his shoulder.")
+                            .font(.mantelDisplay(14.5, weight: .regular, italic: true))
+                            .foregroundStyle(FurnitureDesign.inkSoft)
+                            .padding(.top, 4)
                     }
-                    .padding(.bottom, 100)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
+
+                    whoWasHereCard
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+
+                    photosGrid
+                        .padding(.horizontal, 24)
+                        .padding(.top, 18)
+
+                    statsRow
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+
+                    commentsSection
+                        .padding(.horizontal, 24)
+                        .padding(.top, 24)
+                        .padding(.bottom, 48)
                 }
             }
-            .navigationDestination(for: FamilyEvent.self) { event in
-                EventDetailView(event: event)
-                    .navigationBarBackButtonHidden()
+        }
+        .navigationTitle("")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("Family")
+                    }
+                    .font(.mantelSans(15, weight: .medium))
+                    .foregroundStyle(FurnitureDesign.warmSoft)
+                }
+            }
+        }
+        #endif
+    }
+
+    private var kicker: String {
+        var parts = [moment.day, "2024"]
+        if let place = moment.place { parts.append(place) }
+        return parts.joined(separator: " · ")
+    }
+
+    private var whoWasHere: [FamilyPerson] {
+        moment.whoIDs.compactMap { id in viewModel.family.first(where: { $0.id == id }) }
+    }
+
+    private var whoWasHereCard: some View {
+        HStack(spacing: 0) {
+            HStack(spacing: -8) {
+                ForEach(whoWasHere) { p in
+                    MantelAvatar(person: p, size: 28)
+                        .overlay(Circle().stroke(FurnitureDesign.cream, lineWidth: 2))
+                }
+            }
+            Text(whoWasHere.count == viewModel.family.count ? "Everyone was here" : "\(whoWasHere.count) people")
+                .font(.mantelSans(12.5))
+                .foregroundStyle(FurnitureDesign.inkSoft)
+                .padding(.leading, 16)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(Color.white.opacity(0.85))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(FurnitureDesign.hairline, lineWidth: 0.5)
+        )
+    }
+
+    private var photosGrid: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 6) {
+                ScenePhoto(scene: .sunset, cornerRadius: 8)
+                    .frame(height: 186)
+                    .frame(maxWidth: .infinity)
+                VStack(spacing: 6) {
+                    ScenePhoto(scene: .lake,   cornerRadius: 8).frame(height: 90)
+                    ScenePhoto(scene: .indoor, cornerRadius: 8).frame(height: 90)
+                }
+                .frame(width: 110)
+            }
+            HStack(spacing: 6) {
+                ScenePhoto(scene: .cake,   cornerRadius: 8).frame(height: 70)
+                ScenePhoto(scene: .garden, cornerRadius: 8).frame(height: 70)
+                ScenePhoto(scene: .indoor, cornerRadius: 8).frame(height: 70)
             }
         }
     }
-}
 
-struct FeaturedAlbumView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(FurnitureDesign.sageWool.opacity(0.8))
-                    .frame(height: 250)
-                
-                Image(systemName: "photo.stack.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-            .albumStyle()
-            
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Summer at the Lake")
-                    .font(.title2.bold().serif())
-                Text("248 items • Curated by Dad")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+    private var statsRow: some View {
+        HStack(spacing: 8) {
+            StatBlock(value: "61",  label: "photos")
+            StatBlock(value: "3",   label: "videos")
+            StatBlock(value: "5.0", label: "family weight")
         }
     }
-}
 
-struct AlbumStackThumbnail: View {
-    let event: FamilyEvent
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ZStack {
-                Rectangle()
-                    .fill(FurnitureDesign.walnutWood.opacity(0.1))
-                    .aspectRatio(1, contentMode: .fit)
-                
-                Image(systemName: "photo")
-                    .foregroundStyle(.secondary)
-            }
-            .albumStyle()
-            
+    private var commentsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("What everyone said")
+                .font(.mantelDisplay(16, weight: .medium))
+                .foregroundStyle(FurnitureDesign.ink)
+
+            commentRow(person: viewModel.family[4], text: "best day of my life",            time: "6:14 pm")
+            commentRow(person: viewModel.family[0], text: "so happy with my whole family", time: "7:02 pm")
+        }
+    }
+
+    private func commentRow(person: FamilyPerson, text: String, time: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            MantelAvatar(person: person, size: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.name)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(FurnitureDesign.walnutWood)
-                Text(event.date)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                Text(person.name)
+                    .font(.mantelSans(12, weight: .semibold))
+                    .foregroundStyle(FurnitureDesign.ink)
+                Text(text)
+                    .font(.mantelSans(13))
+                    .foregroundStyle(FurnitureDesign.inkSoft)
+                Text(time)
+                    .font(.mantelSans(10.5))
+                    .foregroundStyle(FurnitureDesign.inkFaint)
+                    .padding(.top, 2)
             }
+            Spacer(minLength: 0)
         }
-    }
-}
-
-extension Font {
-    func serif() -> Font {
-        return self // Simplified for now
+        .padding(12)
+        .background(Color.white.opacity(0.85))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(FurnitureDesign.hairline, lineWidth: 0.5)
+        )
     }
 }
