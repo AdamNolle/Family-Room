@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  adlon-structure:
+    name: Validate package structure on Adlon
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","Linux","X64","personal-ci"]') || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Swift package sources and web resources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('.')
+          manifest = root / 'Package.swift'
+          sources = list((root / 'Sources/Shared').rglob('*.swift'))
+          pages = list((root / 'Family Room').glob('*.html'))
+          assert manifest.is_file() and 'swift-tools-version' in manifest.read_text(encoding='utf-8')
+          assert sources, 'No shared Swift sources found'
+          assert pages, 'No Family Room HTML resources found'
+          print(f'Found {len(sources)} Swift source(s) and {len(pages)} HTML resource(s)')
+          PY
+  native-build:
+    name: Build native app on macOS
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build
