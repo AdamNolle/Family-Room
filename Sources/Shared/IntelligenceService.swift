@@ -7,8 +7,8 @@ actor FamilyIntelligenceService {
     
     private init() {}
     
-    /// Analyzes an image to detect faces and generate embeddings for grouping
-    func analyzeMedia(_ url: URL) async throws -> [String] {
+    /// Detects rectangles only. Recognition and embedding grouping are not implemented.
+    func analyzeMedia(_ url: URL) async throws -> [DetectedFace] {
         let requestHandler = VNImageRequestHandler(url: url)
         let request = VNDetectFaceRectanglesRequest()
         
@@ -16,18 +16,12 @@ actor FamilyIntelligenceService {
         
         guard let results = request.results else { return [] }
         
-        // Return dummy IDs for now to simulate grouping
-        return results.map { _ in UUID().uuidString }
+        return results.map { DetectedFace(bounds: $0.boundingBox, confidence: $0.confidence) }
     }
     
-    /// Finds the "Best Moments" in a video based on motion and focus
-    func rankVideoSegments(url: URL) async -> [TimeRange] {
-        // Implementation for AVFoundation analysis would go here
-        return []
-    }
 }
 
-struct TimeRange {
-    let start: Double
-    let end: Double
+struct DetectedFace {
+    let bounds: CGRect
+    let confidence: Float
 }
