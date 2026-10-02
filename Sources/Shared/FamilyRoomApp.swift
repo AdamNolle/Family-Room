@@ -2,12 +2,13 @@ import SwiftUI
 
 @main
 struct FamilyRoomApp: App {
-    @StateObject private var viewModel = AppViewModel()
+    @StateObject private var library = LibraryStore()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(viewModel)
+            LibraryRootView()
+                .environmentObject(library)
+                .task { await library.open() }
         }
     }
 }

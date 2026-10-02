@@ -11,3 +11,25 @@ xcuserdata/
 # Swift Package Manager
 .build/
 .swiftpm/
+target/
+dist/
+Generated/
+platforms/apple/FamilyRoom.xcodeproj/
+platforms/android/app/src/main/jniLibs/
+platforms/android/app/build/
+.gradle/
+local.properties
+*.frbackup
+*.frroom
+*.frblob
+*.partial
+recovery.key
+
+# Native generated build products and local tooling
+target/
+Generated/Apple/
+Generated/Swift/
+platforms/android/.gradle/
+platforms/android/app/src/main/jniLibs/
+platforms/apple/*.xcodeproj/
+.serena/

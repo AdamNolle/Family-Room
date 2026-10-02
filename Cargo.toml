@@ -1,0 +1,9 @@
+[workspace]
+members = ["crates/family-core"]
+resolver = "2"
+
+[workspace.lints.rust]
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
