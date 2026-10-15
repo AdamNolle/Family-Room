@@ -92,3 +92,29 @@ enum DemoSeed {
     }
 }
 #endif
+
+#if DEBUG && os(macOS)
+import AppKit
+
+/// Debug-only: with FAMILY_ROOM_SNAPSHOT=/path.png the Mac app writes a picture of its own window
+/// after a short delay. Capturing your own window needs no Screen Recording permission.
+enum WindowSnapshot {
+    @MainActor static func scheduleIfRequested() {
+        guard let path = ProcessInfo.processInfo.environment["FAMILY_ROOM_SNAPSHOT"] else { return }
+        let size = ProcessInfo.processInfo.environment["FAMILY_ROOM_WINDOW"].flatMap { s -> CGSize? in
+            let p = s.split(separator: "x").compactMap { Double($0) }
+            return p.count == 2 ? CGSize(width: p[0], height: p[1]) : nil
+        } ?? CGSize(width: 1320, height: 864)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else { return }
+            window.setContentSize(size)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                guard let view = window.contentView, let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+                view.cacheDisplay(in: view.bounds, to: rep)
+                try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
+                if ProcessInfo.processInfo.environment["FAMILY_ROOM_SNAPSHOT_QUIT"] == "1" { NSApp.terminate(nil) }
+            }
+        }
+    }
+}
+#endif

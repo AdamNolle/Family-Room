@@ -39,6 +39,9 @@ struct RootView: View {
             #if DEBUG
             DemoSeed.seedIfNeeded(store)
             if let room = store.currentRoom { DemoSeed.apply(app, room: room) }
+            #if os(macOS)
+            WindowSnapshot.scheduleIfRequested()
+            #endif
             #endif
         }
         .overlay(alignment: .bottom) { ImportToast() }
@@ -140,6 +143,17 @@ struct AppShell: View {
         #if os(macOS)
         SidebarShell(room: room)
         #else
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["FAMILY_ROOM_SHELL"] == "duo" { DuoShell(room: room) } else { platformShell }
+        #else
+        platformShell
+        #endif
+        #endif
+    }
+
+    #if os(iOS)
+    @ViewBuilder
+    private var platformShell: some View {
         if sizeClass == .compact {
             PhoneShell(room: room)
         } else if UIDevice.current.userInterfaceIdiom == .phone {
@@ -147,8 +161,8 @@ struct AppShell: View {
         } else {
             SidebarShell(room: room)
         }
-        #endif
     }
+    #endif
 }
 
 /// The screen for a tab or route, used by every shell.
@@ -282,7 +296,12 @@ struct SidebarShell: View {
     private var topBar: some View {
         HStack(spacing: 16) {
             Text(crumb).labelStyle().lineLimit(1).frame(minWidth: 90, maxWidth: .infinity, alignment: .leading)
-            SearchField(text: Binding(get: { app.query }, set: { app.query = $0; if app.tab != .hearth || !app.path.isEmpty { app.go(.hearth) } }),
+            SearchField(text: Binding(get: { app.query }, set: { newValue in
+                // Text fields can write back an unchanged value when they gain focus; only real edits navigate.
+                guard newValue != app.query else { return }
+                app.query = newValue
+                if !newValue.isEmpty, app.tab != .hearth || !app.path.isEmpty { app.go(.hearth) }
+            }),
                         placeholder: "Names, places, months")
                 .frame(minWidth: 160, maxWidth: 420)
             HStack(spacing: 8) {
@@ -419,9 +438,9 @@ struct DuoShell: View {
                     }
                     .frame(width: 420)
                     Pane(key: detailKey) {
-                        if app.tab == .hearth, let m = app.duoMoment ?? room.momentList.last {
+                        if app.tab == .hearth, let m = app.duoMoment ?? room.momentList.last(where: \.isFeatured) ?? room.momentList.last {
                             MomentView(moment: m, hideBack: true).id(m.objectID)
-                        } else if app.tab == .circle, let p = app.duoPerson ?? room.peopleList.first {
+                        } else if app.tab == .circle, let p = app.duoPerson ?? room.peopleList.first(where: { !$0.isFaceGroup }) ?? room.peopleList.first {
                             PersonView(person: p, hideBack: true, onOpen: { app.duoMoment = $0; app.tab = .hearth }).id(p.objectID)
                         } else {
                             VStack { Spacer(); Text("Pick something on the left.").font(.sans(13)).foregroundStyle(Theme.inkMute); Spacer() }
