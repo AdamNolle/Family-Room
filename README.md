@@ -35,6 +35,10 @@ For a filled-in library during development, launch with `FAMILY_ROOM_DEMO=1` (De
 
 Rooms live in the owner's private CloudKit database and are shared with family through a `CKShare`; members see the Room from the shared database. Faces, clip choices and rendered films are computed on the device and stored in the Room. Author names on notes and additions come from a name you set in the Workshop and are kept in iCloud key-value storage.
 
+## Releasing
+
+See [docs/RELEASE.md](docs/RELEASE.md) for the App Store checklist, listing text and privacy answers.
+
 ## Privacy
 
 Photos stay in your family's iCloud. Face grouping uses Vision feature prints computed on device and never contacts a service. No analytics, no third-party dependencies.
