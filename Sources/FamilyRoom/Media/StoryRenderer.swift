@@ -76,6 +76,8 @@ enum StoryRenderer {
             progress(Double(index + 1) / Double(clips.count) * 0.6)
         }
         guard cursor > .zero else { throw RenderError.noClips }
+        // An audio track with no segments makes the export stop; photo-only films have none.
+        if let audioTrack, audioTrack.segments.isEmpty { composition.removeTrack(audioTrack) }
         let videoComposition = AVMutableVideoComposition()
         videoComposition.renderSize = renderSize
         videoComposition.frameDuration = CMTime(value: 1, timescale: fps)
@@ -86,7 +88,11 @@ enum StoryRenderer {
         let poll = Task { while !Task.isCancelled { progress(0.6 + Double(export.progress) * 0.4); try? await Task.sleep(nanoseconds: 120_000_000) } }
         await export.export()
         poll.cancel()
-        guard export.status == .completed else { throw RenderError.exportFailed(export.error?.localizedDescription ?? "The movie did not finish exporting.") }
+        guard export.status == .completed else {
+            let error = export.error as NSError?
+            let detail = (error?.userInfo[NSUnderlyingErrorKey] as? NSError).map { " (\($0.domain) \($0.code))" } ?? ""
+            throw RenderError.exportFailed((error?.localizedDescription ?? "The movie did not finish exporting.") + detail)
+        }
         progress(1)
         return (output, poster)
     }
