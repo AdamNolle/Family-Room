@@ -2,13 +2,29 @@ import SwiftUI
 
 @main
 struct FamilyRoomApp: App {
-    @StateObject private var viewModel = AppViewModel()
+ @StateObject private var library: LibraryStore
+ init() {
+  let library = LibraryStore()
+  _library = StateObject(wrappedValue: library)
+  #if os(iOS)
+  AppleBackgroundSyncScheduler.register(store: library)
+  #endif
+  RoomArt.registerFonts()
+ }
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environmentObject(viewModel)
+        WindowGroup(id: "main") {
+            LibraryRootView()
+                .environmentObject(library)
+                .task { await library.open() }
         }
+#if os(macOS)
+        MenuBarExtra("Family Room", systemImage: "photo.on.rectangle.angled") {
+            MenuBarDigestView()
+                .environmentObject(library)
+        }
+        .menuBarExtraStyle(.window)
+#endif
     }
 }
 

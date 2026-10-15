@@ -3,7 +3,6 @@ import SwiftUI
 @MainActor
 class AppViewModel: ObservableObject {
     @Published var activeRoomName: String = "The Alderhouse"
-    @Published var isSyncing: Bool = false
     @Published var selectedEvent: FamilyEvent? = nil
 
     // Mantelpiece state — people-as-navigation filter.
@@ -68,14 +67,6 @@ class AppViewModel: ObservableObject {
         } else {
             selectedPersonIDs.insert(id)
         }
-    }
-
-    func processNewMedia(urls: [URL]) async {
-        isSyncing = true
-        for url in urls {
-            _ = try? await FamilyIntelligenceService.shared.analyzeMedia(url)
-        }
-        isSyncing = false
     }
 
     func generateHighlightStory(for event: FamilyEvent) {

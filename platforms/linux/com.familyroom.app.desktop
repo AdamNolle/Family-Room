@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Family Room
+Comment=A private home for shared memories
+Exec=family-room-linux
+Icon=folder-pictures
+Categories=Graphics;Photography;Video;
+Terminal=false

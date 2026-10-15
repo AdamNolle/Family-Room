@@ -1,37 +1,11 @@
-# Family Room: Implementation Plan
+# Delivery plan
 
-## Overview
-"Family Room" is a private, cross-platform media sanctuary designed for deep family connection. It focuses on privacy through local-device AI processing and seamless collaboration via iCloud.
+The full requested creative release remains the target. These internal milestones sequence development rather than removing features.
 
-## Design Philosophy: "Cozy Glass"
-- **Visuals**: A blend of liquid glassmorphism and organic textures. Soft fabrics, warm lighting, and a "homey" atmosphere.
-- **Atmosphere**: Calming, safe, and private. 
+1. **Foundation:** shared encrypted catalog, identity/recovery, real imports, Rooms, permissions, and two-platform interoperability. Core and native client implementations exist; restricted scopes, revocation, pairing and runtime interoperability remain open.
+2. **Storage and sync:** provider sign-in and adapters, automatic contributions, gateway, peer transfers, offline caching and verified replicas. Local transfers and adapter/gateway implementations exist; real account validation, background execution, peer transport, S3/iCloud and recovery drills remain open.
+3. **Memory experience:** Cozy Glass, albums, recognition review, search, comments and Theater. Native Apple browsing and manual organization work; face recognition, semantic search and richer Theater experiences remain open.
+4. **Creative studio:** layered portable timeline, keyframes, grading, audio mixing, reels, chapters, subtitles and export. Apple exports real movies; complete editing, editor coordination and all-platform rendering remain open.
+5. **Platform completion:** native clients and packaging for all named platforms, accessibility, restoration and interoperability certification. Sources/build paths exist; Windows/Linux runtime validation, parity and distribution remain open.
 
-## Technical Architecture
-
-### 1. Data Layer (Local-First Sync)
-- **Framework**: SwiftData + CloudKit.
-- **Syncing**: Automatic background sync across iPhone, iPad, and Mac.
-- **Collaboration**: Uses Shared with You and CloudKit Sharing to invite family members to specific Rooms or Events.
-
-### 2. Intelligence Layer (On-Device AI)
-- **Vision Framework**: For facial recognition and person grouping.
-- **Natural Language**: For semantic searching within albums.
-- **Local Only**: No raw media or facial data ever leaves the user's private iCloud space or device.
-
-### 3. Media Layer
-- **AVFoundation**: High-performance video playback and cinematic stitching of event highlights.
-- **PhotosUI**: Deep integration with the system photo library for seamless imports.
-
-## Proposed Features
-- **The Hearth (Home View)**: A dynamic, living view of the family's most recent memories.
-- **Events & Stories**: Automatically grouped media based on AI analysis of time and location.
-- **People Circle**: A dedicated space to name and group the faces that matter most.
-- **Cinematic Export**: One-tap creation of family montage videos.
-
-## Project Roadmap
-1. **Phase 1**: Core Design System & UI Architecture.
-2. **Phase 2**: SwiftData & CloudKit Integration.
-3. **Phase 3**: Vision Processing & Face Grouping.
-4. **Phase 4**: Sharing & Collaboration Hooks.
-5. **Phase 5**: Video Stitching & Export Engine.
+Every capability and acceptance gate is tracked in the [feature register](docs/FEATURE_REGISTER.md). Update [validation](docs/VALIDATION.md) only after running a check and recording its actual result.
