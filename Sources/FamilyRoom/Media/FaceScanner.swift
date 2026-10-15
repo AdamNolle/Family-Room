@@ -47,6 +47,20 @@ enum FaceScanner {
         return MediaImporter.jpeg(cropped, quality: 0.85)
     }
 
+    static func observation(_ data: Data) -> VNFeaturePrintObservation? {
+        try? NSKeyedUnarchiver.unarchivedObject(ofClass: VNFeaturePrintObservation.self, from: data)
+    }
+
+    static func closest(to print: VNFeaturePrintObservation, in known: [(person: Person, print: VNFeaturePrintObservation)]) -> Person? {
+        var best: (Person, Float)?
+        for candidate in known {
+            var d: Float = 0
+            guard (try? print.computeDistance(&d, to: candidate.print)) != nil else { continue }
+            if d < groupingDistance, best == nil || d < best!.1 { best = (candidate.person, d) }
+        }
+        return best?.0
+    }
+
     static func distance(_ a: Data, _ b: Data) -> Float? {
         guard let pa = try? NSKeyedUnarchiver.unarchivedObject(ofClass: VNFeaturePrintObservation.self, from: a),
               let pb = try? NSKeyedUnarchiver.unarchivedObject(ofClass: VNFeaturePrintObservation.self, from: b) else { return nil }
@@ -58,27 +72,36 @@ enum FaceScanner {
 
 extension RoomStore {
     /// Scans photos in the Room that have not been checked yet and groups faces into face groups.
-    /// Nothing leaves the device; feature prints stay in the local library and sync only as part of the Room.
+    /// Detection runs off the main thread; feature prints stay in the Room's own library and never go to a service.
     func scanFaces(in room: Room) async {
         guard faceScanProgress == nil else { return }
         let pending = room.mediaList.filter { !$0.isVideo && !$0.faceScanned && $0.data != nil }
         let progress = Progress(totalUnitCount: Int64(pending.count))
         faceScanProgress = progress
         defer { faceScanProgress = nil }
+        // Decode every known print once instead of once per comparison.
+        var known: [(person: Person, print: VNFeaturePrintObservation)] = []
+        for person in room.people ?? [] {
+            for face in person.faces ?? [] {
+                if let data = face.featurePrint, let print = FaceScanner.observation(data) { known.append((person, print)) }
+            }
+        }
         for item in pending {
             if Task.isCancelled { break }
             guard let data = item.data else { continue }
-            let found = (try? await FaceScanner.detect(in: data)) ?? []
+            let found = (try? await Task.detached(priority: .utility) { try await FaceScanner.detect(in: data) }.value) ?? []
             for face in found {
                 let obs = FaceObservation(context: context)
                 obs.id = UUID(); obs.confidence = face.confidence
                 obs.boxX = face.box.minX; obs.boxY = face.box.minY; obs.boxWidth = face.box.width; obs.boxHeight = face.box.height
                 obs.crop = face.crop; obs.featurePrint = face.featurePrint; obs.media = item
-                obs.person = matchGroup(for: face, in: room)
-                if obs.person == nil, face.featurePrint != nil {
-                    let group = createPerson(named: "Face \(((room.people ?? []).filter(\.isFaceGroup).count) + 1)", faceGroup: true, in: room)
-                    obs.person = group
+                let print = face.featurePrint.flatMap(FaceScanner.observation)
+                if let print { obs.person = FaceScanner.closest(to: print, in: known) }
+                if obs.person == nil, print != nil {
+                    let groups = (room.people ?? []).filter(\.isFaceGroup).count
+                    obs.person = createPerson(named: "Face \(groups + 1)", faceGroup: true, in: room)
                 }
+                if let person = obs.person, let print { known.append((person, print)) }
                 if let person = obs.person, !person.isFaceGroup, let moment = item.moment {
                     var set = moment.people ?? []; set.insert(person); moment.people = set
                 }
@@ -86,19 +109,6 @@ extension RoomStore {
             item.faceScanned = true
             progress.completedUnitCount += 1
             save()
-            await Task.yield()
         }
-    }
-
-    private func matchGroup(for face: DetectedFace, in room: Room) -> Person? {
-        guard let print = face.featurePrint else { return nil }
-        var best: (Person, Float)?
-        for person in room.people ?? [] {
-            for other in person.faces ?? [] {
-                guard let otherPrint = other.featurePrint, let d = FaceScanner.distance(print, otherPrint) else { continue }
-                if d < FaceScanner.groupingDistance, best == nil || d < best!.1 { best = (person, d) }
-            }
-        }
-        return best?.0
     }
 }

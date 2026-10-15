@@ -8,7 +8,7 @@ xcodegen generate --quiet
 DERIVED="${FAMILY_ROOM_DERIVED:-$HOME/Library/Caches/com.familyroom.build}"
 TEAM="$(sed -n 's/^DEVELOPMENT_TEAM *= *//p' Config/Signing.xcconfig 2>/dev/null | tr -d ' ')"
 EXTRA=()
-if [[ -z "$TEAM" ]]; then EXTRA=(CODE_SIGN_IDENTITY=- CODE_SIGN_ENTITLEMENTS= CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=); fi
+if [[ -z "$TEAM" ]]; then EXTRA=(CODE_SIGN_IDENTITY=- "CODE_SIGN_ENTITLEMENTS=" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=); fi
 xcodebuild -project FamilyRoom.xcodeproj -scheme FamilyRoom-macOS -configuration Debug \
   -derivedDataPath "$DERIVED" -quiet "${EXTRA[@]}" build
 APP="$DERIVED/Build/Products/Debug/Family Room.app"

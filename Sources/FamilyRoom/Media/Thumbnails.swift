@@ -19,19 +19,20 @@ struct MediaThumb: View {
     @State private var image: CGImage?
 
     var body: some View {
-        ZStack {
-            Theme.hair2
-            if let image {
-                Image(decorative: image, scale: 1).resizable().aspectRatio(contentMode: .fill)
+        // The fill image lives in an overlay so it can never grow the frame it is placed in.
+        Theme.hair2
+            .overlay {
+                if let image { Image(decorative: image, scale: 1).resizable().aspectRatio(contentMode: .fill) }
             }
+            .clipped()
+            .overlay {
             if showVideoBadge, item.isVideo {
                 VStack { Spacer(); HStack { Spacer()
                     Text(Catalog.duration(item.duration)).font(.num(10, .semibold)).foregroundStyle(.white)
                         .padding(.horizontal, 6).padding(.vertical, 3).background(.black.opacity(0.45), in: Capsule()).padding(6)
                 } }
             }
-        }
-        .clipped()
+            }
         .task(id: "\(item.objectID.uriRepresentation().absoluteString)-\(Int(maxSide))") { await load() }
     }
 
@@ -53,11 +54,11 @@ struct DataThumb: View {
     @State private var image: CGImage?
 
     var body: some View {
-        ZStack {
-            Theme.hair2
-            if let image { Image(decorative: image, scale: 1).resizable().aspectRatio(contentMode: .fill) }
-        }
-        .clipped()
+        Theme.hair2
+            .overlay {
+                if let image { Image(decorative: image, scale: 1).resizable().aspectRatio(contentMode: .fill) }
+            }
+            .clipped()
         .task(id: data?.hashValue ?? 0) {
             guard let data else { image = nil; return }
             let side = maxSide

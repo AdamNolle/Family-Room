@@ -72,7 +72,7 @@ struct CircleView: View {
                 .overlay(alignment: .top) { Hairline() }
             }
             if members.isEmpty {
-                Text("No one yet. Add the people who show up in your photos — this never invites anyone to the Room; members are managed in Settings.")
+                Text("No one yet. Add the people who show up in your photos. This never invites anyone; members are managed in Settings.")
                     .font(.sans(13)).lineSpacing(3).foregroundStyle(Theme.inkMute).padding(.vertical, 14).frame(maxWidth: .infinity, alignment: .leading)
             }
         }

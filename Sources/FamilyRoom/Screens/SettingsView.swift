@@ -65,7 +65,7 @@ struct SettingsView: View {
         .padding(.horizontal, wide ? 36 : 20).padding(.top, wide ? 26 : 10).padding(.bottom, wide ? 48 : 118)
         .task(id: room.objectID) { roomName = room.displayName; await sharing.refresh(for: room) }
         .confirmationDialog("Leave \(room.displayName)? You will stop seeing its photos on your devices.", isPresented: $confirmLeave, titleVisibility: .visible) {
-            Button("Leave Room", role: .destructive) { Task { await sharing.leave(room); store.delete(room) } }
+            Button("Leave Room", role: .destructive) { Task { await sharing.leave(room); store.roomWasLeft(); app.go(.hearth) } }
         }
         .confirmationDialog("Delete \(room.displayName) and everything in it for every member?", isPresented: $confirmDeleteRoom, titleVisibility: .visible) {
             Button("Delete Room", role: .destructive) { store.delete(room) }

@@ -44,7 +44,7 @@ struct MomentView: View {
             if !hideBack { BackButton(title: "The Hearth", action: onBack).padding(.bottom, 16) }
             Text([Catalog.dayLabel(s.date) + " " + String(Calendar.current.component(.year, from: s.date)), s.place ?? ""].filter { !$0.isEmpty }.joined(separator: " · "))
                 .labelStyle(warm: true).monospacedDigit()
-            Text(s.title).font(.display(wide ? 78 : 58)).foregroundStyle(Theme.ink).lineSpacing(-8).padding(.top, 12)
+            Text(s.title).font(.display(wide ? 78 : 58)).foregroundStyle(Theme.ink).lineSpacing(-8).minimumScaleFactor(0.6).padding(.top, 12)
             if let quote = s.quote { Text(quote).font(.display(20)).italic().foregroundStyle(Theme.inkSoft).lineSpacing(2).padding(.top, 12) }
             who.padding(.top, 22)
             stats.padding(.top, 20)

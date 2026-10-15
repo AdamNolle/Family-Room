@@ -267,7 +267,10 @@ struct SidebarShell: View {
                 Rectangle().fill(Theme.hair2).frame(width: 0.5)
                 VStack(spacing: 0) {
                     topBar
-                    Pane(key: app.screenKey) { ScreenBody(room: room, wide: true, showSearch: false, showPeople: false) }
+                    GeometryReader { geo in
+                        // Two-column layouts need room; the design switches at a 700 pt pane.
+                        Pane(key: app.screenKey) { ScreenBody(room: room, wide: geo.size.width >= 700, showSearch: false, showPeople: false) }
+                    }
                 }
             }
         }
@@ -278,17 +281,17 @@ struct SidebarShell: View {
 
     private var topBar: some View {
         HStack(spacing: 16) {
-            Text(crumb).labelStyle().frame(maxWidth: .infinity, alignment: .leading)
+            Text(crumb).labelStyle().lineLimit(1).frame(minWidth: 90, maxWidth: .infinity, alignment: .leading)
             SearchField(text: Binding(get: { app.query }, set: { app.query = $0; if app.tab != .hearth || !app.path.isEmpty { app.go(.hearth) } }),
-                        placeholder: "Search a name, a place, a month")
-                .frame(maxWidth: 420)
+                        placeholder: "Names, places, months")
+                .frame(minWidth: 160, maxWidth: 420)
             HStack(spacing: 8) {
                 FRButton("Add photos", mark: "+") { app.showImporter = true }
                 #if os(macOS)
                 FRButton("Files…", style: .ghost) { NotificationCenter.default.post(name: .familyRoomImportFiles, object: nil) }
                 #endif
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .fixedSize()
         }
         .padding(.horizontal, 32).frame(height: 56)
         .overlay(alignment: .bottom) { Hairline() }

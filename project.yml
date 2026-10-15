@@ -40,21 +40,15 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         CKSharingSupported: true
         FamilyRoomTeam: $(DEVELOPMENT_TEAM)
-    entitlements:
-      path: Support/FamilyRoom.entitlements
-      properties:
-        com.apple.developer.icloud-container-identifiers: [iCloud.com.familyroom.app]
-        com.apple.developer.icloud-services: [CloudKit]
-        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)$(CFBundleIdentifier)
-        aps-environment: development
-        com.apple.security.app-sandbox: true
-        com.apple.security.network.client: true
-        com.apple.security.files.user-selected.read-write: true
-        com.apple.security.personal-information.photos-library: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.familyroom.app
         PRODUCT_NAME: Family Room
+        PRODUCT_MODULE_NAME: FamilyRoom
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": Support/FamilyRoom-iOS.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Support/FamilyRoom-iOS.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": Support/FamilyRoom-macOS.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: false
         ENABLE_PREVIEWS: true
@@ -70,6 +64,8 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.familyroom.app.tests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Family Room.app/Contents/MacOS/Family Room"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 schemes:
   FamilyRoom-iOS:
     build:

@@ -60,14 +60,15 @@ struct HearthView: View {
     private var head: some View {
         VStack(alignment: .leading, spacing: 0) {
             if showSearch {
-                SearchField(text: $app.query, placeholder: "Search a name, a place, a month", tall: true).padding(.bottom, 18)
+                SearchField(text: $app.query, placeholder: "Names, places, months", tall: true).padding(.bottom, 18)
             }
             Text(Catalog.kicker(selectedNames: people.filter { app.selectedPeople.contains($0.id ?? UUID()) }.map(\.displayName), query: app.query, year: year)).labelStyle(warm: true)
-            HStack(alignment: .bottom, spacing: 14) {
+            let yearLayout = wide ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .bottom, spacing: 14))
+            yearLayout {
                 Menu {
                     ForEach(years, id: \.self) { y in Button(String(y)) { app.year = y; app.stageMomentID = nil } }
                 } label: {
-                    Text(String(year)).font(.display(wide ? 104 : 96)).foregroundStyle(Theme.ink).lineSpacing(-20).offset(x: -4)
+                    Text(String(year)).font(.display(wide ? 104 : 96)).foregroundStyle(Theme.ink).lineLimit(1).fixedSize().offset(x: -4)
                 }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
                 .disabled(years.count < 2)
@@ -76,7 +77,7 @@ struct HearthView: View {
                     (Text("\(active.count)").font(.num(13, .semibold)).foregroundStyle(Theme.ink) + Text(" moments").foregroundStyle(Theme.inkSoft))
                     Text("\(active.reduce(0) { $0 + $1.mediaCount }) photos and videos").foregroundStyle(Theme.inkSoft)
                 }
-                .font(.num(13)).padding(.bottom, 6)
+                .font(.num(13)).padding(.bottom, wide ? 0 : 6)
             }
             .padding(.top, 10)
             if showPeople, !people.isEmpty { peopleChips.padding(.top, 16) }
@@ -129,7 +130,7 @@ struct HearthView: View {
                 .id(stage.id)
                 .transition(.opacity)
                 HStack(alignment: .bottom, spacing: 14) {
-                    Text(stage.title).font(.display(wide ? 58 : 42)).foregroundStyle(Theme.ink).lineSpacing(-6)
+                    Text(stage.title).font(.display(wide ? 58 : 42)).foregroundStyle(Theme.ink).lineSpacing(-6).minimumScaleFactor(0.6)
                     Spacer(minLength: 0)
                     AvatarStack(people: stage.people, size: 22)
                 }

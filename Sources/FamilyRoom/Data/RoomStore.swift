@@ -19,9 +19,9 @@ final class RoomStore: ObservableObject {
     @Published var lastError: String?
     @AppStorage("room.currentID") private var currentRoomID: String = ""
 
-    init(persistence: Persistence = .shared, identity: Identity = .shared) {
+    init(persistence: Persistence = .shared, identity: Identity? = nil) {
         self.persistence = persistence
-        self.identity = identity
+        self.identity = identity ?? .shared
         self.sharing = RoomSharing(persistence: persistence)
         restoreCurrentRoom()
         NotificationCenter.default.addObserver(forName: .NSPersistentStoreRemoteChange, object: persistence.container.persistentStoreCoordinator, queue: .main) { [weak self] _ in
@@ -68,6 +68,13 @@ final class RoomStore: ObservableObject {
 
     func delete(_ room: Room) {
         context.delete(room); save()
+        restoreCurrentRoom()
+    }
+
+    /// After leaving a shared Room its records are purged by CloudKit; just move on to another Room.
+    func roomWasLeft() {
+        context.refreshAllObjects()
+        currentRoom = nil
         restoreCurrentRoom()
     }
 
