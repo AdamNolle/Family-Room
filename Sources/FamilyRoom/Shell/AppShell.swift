@@ -201,11 +201,11 @@ struct Pane<Content: View>: View {
                 Color.clear.frame(height: 0).id("top")
                 content()
                     .id(key)
-                    .transition(reduceMotion ? .opacity : .asymmetric(insertion: .opacity.combined(with: .offset(y: 8)), removal: .opacity))
+                    .transition(reduceMotion ? .opacity : .asymmetric(insertion: .opacity.combined(with: .offset(y: 14)).combined(with: .scale(scale: 0.992, anchor: .top)), removal: .opacity.animation(.easeOut(duration: 0.12))))
             }
             .scrollIndicators(.hidden)
             .onChange(of: key) { _, _ in proxy.scrollTo("top", anchor: .top) }
-            .animation(Theme.ease, value: key)
+            .animation(reduceMotion ? .easeOut(duration: 0.2) : Motion.gentle, value: key)
         }
     }
 }
@@ -238,18 +238,24 @@ struct PhoneShell: View {
 
 struct TabBar: View {
     @EnvironmentObject private var app: AppState
+    @Namespace private var pill
     var body: some View {
         HStack(spacing: 4) {
             ForEach(AppTab.allCases) { tab in
                 let on = app.tab == tab && app.path.isEmpty
-                Button { app.go(tab); Feedback.tick() } label: {
+                Button { withAnimation(Motion.snappy) { app.go(tab) }; Feedback.tick() } label: {
                     VStack(spacing: 3) {
                         Text(tab.number).font(.label(9.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint)
                         Text(tab.title).font(.sans(12, .semibold)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-                    .shadow(color: Theme.shadowInk.opacity(on ? 0.1 : 0), radius: 1.5, y: 1)
+                    .background {
+                        if on {
+                            RoundedRectangle(cornerRadius: 26, style: .continuous).fill(.white)
+                                .shadow(color: Theme.shadowInk.opacity(0.1), radius: 1.5, y: 1)
+                                .matchedGeometryEffect(id: "tab", in: pill)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(tab.longTitle)
@@ -262,7 +268,7 @@ struct TabBar: View {
         .background(Theme.paper2.opacity(0.74), in: RoundedRectangle(cornerRadius: 31, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 31, style: .continuous).strokeBorder(Theme.hair2, lineWidth: 0.5))
         .shadow(color: Theme.shadowInk.opacity(0.16), radius: 15, y: 8)
-        .animation(Theme.ease, value: app.tab)
+        .animation(Motion.snappy, value: app.tab)
     }
 }
 
@@ -329,6 +335,7 @@ struct Sidebar: View {
     @ObservedObject var room: Room
     @EnvironmentObject private var app: AppState
     @EnvironmentObject private var store: RoomStore
+    @Namespace private var navPill
 
     private var people: [Person] { room.peopleList.filter { !$0.isFaceGroup } }
 
@@ -352,7 +359,7 @@ struct Sidebar: View {
             VStack(spacing: 1) {
                 ForEach(people, id: \.objectID) { p in
                     let id = p.id ?? UUID(), on = app.selectedPeople.contains(id)
-                    Button { app.toggle(id); Feedback.tick() } label: {
+                    Button { withAnimation(Motion.snappy) { app.toggle(id) }; Feedback.tick() } label: {
                         HStack(spacing: 10) {
                             AvatarView(person: p.summary, size: 28, ring: on, dim: !app.selectedPeople.isEmpty && !on)
                             Text(p.displayName).font(.sans(13.5, .medium)).foregroundStyle(Theme.ink).lineLimit(1)
@@ -385,15 +392,21 @@ struct Sidebar: View {
         VStack(spacing: 1) {
             ForEach(tabs) { tab in
                 let on = app.tab == tab
-                Button { app.go(tab) } label: {
+                Button { withAnimation(Motion.snappy) { app.go(tab) } } label: {
                     HStack(spacing: 10) {
                         Text(tab.number).font(.label(10.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint).frame(width: 20, alignment: .leading)
                         Text(tab.longTitle).font(.sans(14, .medium)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
                         Spacer()
                     }
                     .padding(.horizontal, 10).frame(minHeight: 36)
-                    .background(on ? Color.white.opacity(0.8) : .clear, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-                    .overlay { if on { RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Theme.hair2, lineWidth: 0.5) } }
+                    .background {
+                        if on {
+                            RoundedRectangle(cornerRadius: 7, style: .continuous).fill(.white.opacity(0.8))
+                                .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Theme.hair2, lineWidth: 0.5))
+                                .matchedGeometryEffect(id: "nav", in: navPill)
+                        }
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -421,6 +434,7 @@ struct Sidebar: View {
 struct DuoShell: View {
     @ObservedObject var room: Room
     @EnvironmentObject private var app: AppState
+    @Namespace private var dockPill
 
     private var split: Bool { app.tab == .hearth || app.tab == .circle }
 
@@ -468,13 +482,15 @@ struct DuoShell: View {
         VStack(spacing: 6) {
             ForEach(AppTab.allCases) { tab in
                 let on = app.tab == tab
-                Button { app.go(tab); Feedback.tick() } label: {
+                Button { withAnimation(Motion.snappy) { app.go(tab) }; Feedback.tick() } label: {
                     VStack(spacing: 3) {
                         Text(tab.number).font(.label(9.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint)
                         Text(tab.title).font(.sans(11, .semibold)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
                     }
                     .frame(maxWidth: .infinity).frame(height: 58)
-                    .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .background {
+                        if on { RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.white).matchedGeometryEffect(id: "dock", in: dockPill) }
+                    }
                 }
                 .buttonStyle(.plain)
             }

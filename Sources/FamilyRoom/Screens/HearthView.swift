@@ -45,7 +45,7 @@ struct HearthView: View {
             }
             if let stage, !yearMoments.isEmpty {
                 RiverRuler(moments: summaries, year: year, current: stage, matches: matches) { picked in
-                    app.stageMomentID = picked.id
+                    withAnimation(Motion.gentle) { app.stageMomentID = picked.id }
                     if listOnly, let m = moment(for: picked) { onOpen(m) }
                 }
             }
@@ -63,6 +63,8 @@ struct HearthView: View {
                 SearchField(text: $app.query, placeholder: "Names, places, months", tall: true).padding(.bottom, 18)
             }
             Text(Catalog.kicker(selectedNames: people.filter { app.selectedPeople.contains($0.id ?? UUID()) }.map(\.displayName), query: app.query, year: year)).labelStyle(warm: true)
+                .contentTransition(.opacity)
+                .animation(Motion.gentle, value: app.selectedPeople)
             let yearLayout = wide ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .bottom, spacing: 14))
             yearLayout {
                 Menu {
@@ -75,9 +77,12 @@ struct HearthView: View {
                 .accessibilityLabel("Year \(year)")
                 VStack(alignment: .leading, spacing: 2) {
                     (Text("\(active.count)").font(.num(13, .semibold)).foregroundStyle(Theme.ink) + Text(" moments").foregroundStyle(Theme.inkSoft))
+                        .contentTransition(.numericText())
                     Text("\(active.reduce(0) { $0 + $1.mediaCount }) photos and videos").foregroundStyle(Theme.inkSoft)
+                        .contentTransition(.numericText())
                 }
                 .font(.num(13)).padding(.bottom, wide ? 0 : 6)
+                .animation(Motion.gentle, value: active.count)
             }
             .padding(.top, 10)
             if showPeople, !people.isEmpty { peopleChips.padding(.top, 16) }
@@ -89,9 +94,10 @@ struct HearthView: View {
             HStack(spacing: 6) {
                 ForEach(people) { p in
                     let id = p.id ?? UUID(), on = app.selectedPeople.contains(id)
-                    Button { app.toggle(id); Feedback.tick() } label: {
+                    Button { withAnimation(Motion.snappy) { app.toggle(id) }; Feedback.tick() } label: {
                         HStack(spacing: 8) {
                             AvatarView(person: p.summary, size: 26, ring: on, dim: !app.selectedPeople.isEmpty && !on)
+                                .pop(on: on)
                             Text(p.displayName).font(.sans(13.5, .medium)).foregroundStyle(Theme.ink)
                         }
                         .padding(.leading, 9).padding(.trailing, 14).frame(height: 44)
@@ -121,16 +127,22 @@ struct HearthView: View {
                 }
                 .padding(.bottom, 12)
                 Button { onOpen(m) } label: {
-                    PhotoSurface(media: m.cover, label: m.cover == nil ? nil : "Photo · \(stage.title)")
-                        .aspectRatio(3 / 2, contentMode: .fit)
-                        .printShadow()
-                        .overlay(CornerCrops())
+                    ZStack {
+                        PhotoSurface(media: m.cover, label: m.cover == nil ? nil : "Photo · \(stage.title)")
+                            .breathing()
+                            .id(stage.id)
+                            .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 1.03)), removal: .opacity))
+                    }
+                    .aspectRatio(3 / 2, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                    .printShadow()
+                    .overlay(CornerCrops())
                 }
                 .buttonStyle(PressScale())
-                .id(stage.id)
-                .transition(.opacity)
                 HStack(alignment: .bottom, spacing: 14) {
                     Text(stage.title).font(.display(wide ? 58 : 42)).foregroundStyle(Theme.ink).lineSpacing(-6).minimumScaleFactor(0.6)
+                        .id("title-\(stage.id)")
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .offset(y: 8)), removal: .opacity))
                     Spacer(minLength: 0)
                     AvatarStack(people: stage.people, size: 22)
                 }
@@ -141,7 +153,7 @@ struct HearthView: View {
                 FRButton("Open moment · \(stage.mediaCount) \(stage.mediaCount == 1 ? "item" : "items") →", style: .ghost, size: .small) { onOpen(m) }
                     .padding(.top, 16)
             }
-            .animation(Theme.ease, value: stage.id)
+            .animation(Motion.gentle, value: stage.id)
         } else if moments.isEmpty {
             EmptyHearth()
         }
@@ -154,9 +166,11 @@ struct HearthView: View {
             ForEach(Array(summaries.enumerated()), id: \.element.id) { i, s in
                 if i > 0 { Hairline() }
                 IndexRow(number: i + 1, moment: s, selected: s.id == stage?.id, dim: !matches(s)) {
-                    app.stageMomentID = s.id
+                    withAnimation(Motion.gentle) { app.stageMomentID = s.id }
                     if let m = moment(for: s) { onOpen(m) }
                 }
+                .entrance(i)
+                .animation(Motion.gentle, value: matches(s))
             }
             if active.isEmpty, !summaries.isEmpty {
                 Text("Nothing matches yet. Try a name, a place, or a month.").font(.sans(13)).foregroundStyle(Theme.inkMute).padding(.vertical, 14).frame(maxWidth: .infinity, alignment: .leading)
@@ -179,11 +193,11 @@ struct HearthView: View {
                 Text("Nothing new this week. Add photos and they show up here for everyone in the Room.").font(.sans(13)).foregroundStyle(Theme.inkMute)
             } else if wide {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    ForEach(items) { card($0) }
+                    ForEach(Array(items.enumerated()), id: \.element.id) { i, c in card(c).entrance(i) }
                 }
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) { ForEach(items) { card($0).frame(width: 270) } }.padding(.horizontal, 20)
+                    HStack(spacing: 10) { ForEach(Array(items.enumerated()), id: \.element.id) { i, c in card(c).frame(width: 270).entrance(i) } }.padding(.horizontal, 20)
                 }
                 .padding(.horizontal, -20)
             }

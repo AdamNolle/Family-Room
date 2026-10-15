@@ -10,6 +10,8 @@ struct RiverRuler: View {
     var height: CGFloat = 84
 
     @State private var dragging = false
+    @State private var grown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -29,25 +31,29 @@ struct RiverRuler: View {
                             .labelStyle(size: 10, color: Theme.inkMute)
                             .offset(x: x + 6, y: height - 20)
                     }
-                    ForEach(moments) { m in
+                    ForEach(Array(moments.enumerated()), id: \.element.id) { i, m in
                         let on = m.id == current?.id
                         let x = CGFloat(Catalog.yearFraction(m.date)) * w
-                        let h = CGFloat(8 + m.weight * 7)
+                        let h = CGFloat(8 + m.weight * 7) * (on ? 1.15 : 1)
                         RoundedRectangle(cornerRadius: 1)
                             .fill(on ? Theme.warm : Theme.inkFaint)
                             .frame(width: on ? 4 : 2, height: h)
+                            .scaleEffect(y: grown || reduceMotion ? 1 : 0.01, anchor: .bottom)
                             .offset(x: x - (on ? 2 : 1), y: baseline - h)
                             .opacity(matches(m) ? 1 : 0.2)
-                            .animation(.easeOut(duration: 0.25), value: on)
+                            .animation(Motion.snappy, value: on)
+                            .animation(Motion.gentle, value: matches(m))
+                            .animation(reduceMotion ? nil : Motion.gentle.delay(0.15 + Double(i) * 0.03), value: grown)
                     }
                     if let current {
                         let x = CGFloat(Catalog.yearFraction(current.date)) * w
                         Path { p in p.move(to: CGPoint(x: x, y: 0)); p.addLine(to: CGPoint(x: x, y: baseline)) }
                             .stroke(Theme.warm.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                            .animation(Theme.ease, value: current.id)
+                            .animation(Motion.gentle, value: current.id)
                         Text(Catalog.dayLabel(current.date)).font(.num(11, .semibold)).foregroundStyle(Theme.warm)
                             .offset(x: min(x + 6, w - 48), y: 0)
-                            .animation(Theme.ease, value: current.id)
+                            .contentTransition(.numericText())
+                            .animation(Motion.gentle, value: current.id)
                     }
                 }
                 .frame(width: w, height: height)
@@ -59,6 +65,7 @@ struct RiverRuler: View {
             }
             .frame(height: height)
         }
+        .onAppear { grown = true }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("River of time")
         .accessibilityValue(current.map { "\($0.title), \(Catalog.dayLabel($0.date))" } ?? "")

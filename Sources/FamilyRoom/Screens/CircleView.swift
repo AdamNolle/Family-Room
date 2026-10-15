@@ -65,9 +65,10 @@ struct CircleView: View {
                     }
                     .buttonStyle(.plain)
                     Spacer(minLength: 0)
-                    FRButton(on ? "Filtering ✓" : "Filter", style: on ? .solid : .ghost, size: .small) { app.toggle(id); Feedback.tick() }
+                    FRButton(on ? "Filtering ✓" : "Filter", style: on ? .solid : .ghost, size: .small) { withAnimation(Motion.snappy) { app.toggle(id) }; Feedback.tick() }
                 }
                 .padding(.vertical, 10)
+                .entrance(i)
                 .background(activeID == id ? LinearGradient(colors: [.white.opacity(0.6), .clear], startPoint: .leading, endPoint: .trailing) : LinearGradient(colors: [.clear], startPoint: .leading, endPoint: .trailing))
                 .overlay(alignment: .top) { Hairline() }
             }
@@ -82,7 +83,7 @@ struct CircleView: View {
     private var faceGrid: some View {
         let columns = [GridItem(.adaptive(minimum: 84), spacing: 20, alignment: .top)]
         return LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
-            ForEach(faces, id: \.objectID) { group in
+            ForEach(Array(faces.enumerated()), id: \.element.objectID) { fi, group in
                 Button { onOpen(group) } label: {
                     VStack(spacing: 4) {
                         FaceCropView(group: group, size: 64)
@@ -94,6 +95,7 @@ struct CircleView: View {
                     .frame(width: 84)
                 }
                 .buttonStyle(PressScale())
+                .entrance(fi + members.count)
             }
             Button { Task { await store.scanFaces(in: room) } } label: {
                 VStack(spacing: 4) {

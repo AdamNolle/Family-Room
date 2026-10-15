@@ -128,8 +128,8 @@ struct FRButton: View {
 struct PressScale: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.965 : 1)
+            .animation(Motion.snappy, value: configuration.isPressed)
     }
 }
 
@@ -323,7 +323,7 @@ struct SwitchRow: View {
                     .overlay(alignment: isOn ? .trailing : .leading) {
                         Circle().fill(.white).frame(width: 20, height: 20).shadow(color: .black.opacity(0.2), radius: 1.5, y: 1).padding(2)
                     }
-                    .animation(.easeOut(duration: 0.25), value: isOn)
+                    .animation(Motion.snappy, value: isOn)
             }
             .padding(.horizontal, 18).frame(minHeight: 60)
         }
@@ -381,6 +381,6 @@ struct IndexRow: View {
         }
         .buttonStyle(.plain)
         .disabled(dim)
-        .animation(Theme.ease, value: selected)
+        .animation(Motion.snappy, value: selected)
     }
 }

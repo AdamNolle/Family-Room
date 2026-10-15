@@ -33,8 +33,8 @@ struct StoriesView: View {
                 Text("Open a moment and choose Make a story. Clips are picked and stitched on this \(DeviceWord.current).").font(.sans(13)).lineSpacing(3).foregroundStyle(Theme.inkMute).padding(.top, 12)
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: wide ? 4 : 2), spacing: 18) {
-                    ForEach(handCut, id: \.objectID) { story in
-                        filmCard(story)
+                    ForEach(Array(handCut.enumerated()), id: \.element.objectID) { i, story in
+                        filmCard(story).entrance(i)
                     }
                 }
                 .padding(.top, 12)
@@ -70,7 +70,7 @@ struct StoriesView: View {
             } else {
                 ZStack {
                     Theme.filmBed
-                    if let cover = newThisWeek.last { MediaThumb(item: cover, maxSide: 800, showVideoBadge: false).saturation(0.6).brightness(-0.3) }
+                    if let cover = newThisWeek.last { MediaThumb(item: cover, maxSide: 800, showVideoBadge: false).saturation(0.6).brightness(-0.3).breathing() }
                     VStack { Rectangle().fill(Theme.filmBar).frame(height: 10); Spacer(); Rectangle().fill(Theme.filmBar).frame(height: 10) }
                     Text(newThisWeek.isEmpty ? "Nothing new yet" : "Not stitched yet").font(.display(26)).foregroundStyle(Theme.paper2.opacity(0.85))
                 }

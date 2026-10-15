@@ -89,13 +89,14 @@ struct ComposerSheet: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: wide ? 4 : 2), spacing: 12) {
                 ForEach(candidates) { c in
                     let on = selected.contains(c.id)
-                    Button { if on { selected.remove(c.id) } else { selected.insert(c.id) }; Feedback.tick() } label: {
+                    Button { withAnimation(Motion.snappy) { if on { selected.remove(c.id) } else { selected.insert(c.id) } }; Feedback.tick() } label: {
                         VStack(alignment: .leading, spacing: 6) {
                             ZStack(alignment: .topTrailing) {
                                 if let m = media[c.id] { MediaThumb(item: m, maxSide: 500, showVideoBadge: false) } else { Theme.hair2 }
                                 Circle().fill(on ? Theme.warm : Color.black.opacity(0.35)).frame(width: 20, height: 20)
                                     .overlay(Circle().strokeBorder(.white.opacity(on ? 0 : 0.9), lineWidth: 1.5))
-                                    .overlay(Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(.white).opacity(on ? 1 : 0))
+                                    .overlay(Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(.white).opacity(on ? 1 : 0).scaleEffect(on ? 1 : 0.4))
+                                    .pop(on: on)
                                     .padding(7)
                             }
                             .aspectRatio(16 / 9, contentMode: .fit).clipShape(RoundedRectangle(cornerRadius: 4))
@@ -130,8 +131,10 @@ struct ComposerSheet: View {
                     Text("\(i + 1)").font(.num(10, .semibold)).foregroundStyle(.white).shadow(radius: 2).padding(.leading, 6).padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity)
+                .transition(.scale(scale: 0.6).combined(with: .opacity))
             }
         }
+        .animation(Motion.snappy, value: picked.map(\.id))
         .frame(height: 30).frame(maxWidth: .infinity)
         .background(Theme.ink.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
         .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -146,6 +149,7 @@ struct ComposerSheet: View {
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.ink.opacity(0.1))
                     Capsule().fill(Theme.warm).frame(width: max(6, geo.size.width * progress))
+                        .animation(.easeOut(duration: 0.25), value: progress)
                 }
             }
             .frame(height: 6)

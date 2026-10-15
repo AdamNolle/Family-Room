@@ -50,7 +50,8 @@ struct MomentView: View {
             stats.padding(.top, 20)
             HStack(spacing: 8) {
                 FRButton("Make a story", mark: "✦") { app.composeMoment = moment }
-                FRButton(moment.liked(by: store.identity.authorID) ? "♥ \(moment.likeCount)" : "♡ \(moment.likeCount)", style: .ghost) { store.toggleLike(moment); Feedback.tick() }
+                FRButton(moment.liked(by: store.identity.authorID) ? "♥ \(moment.likeCount)" : "♡ \(moment.likeCount)", style: .ghost) { withAnimation(Motion.pop) { store.toggleLike(moment) }; Feedback.tick() }
+                    .pop(on: moment.likeCount)
                     .accessibilityLabel(moment.liked(by: store.identity.authorID) ? "Unlike" : "Like")
                 Menu {
                     Button("Edit title and place") { title = moment.title ?? ""; place = moment.place ?? ""; quote = moment.quote ?? ""; editing = true }
@@ -114,6 +115,7 @@ struct MomentView: View {
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: columns), spacing: 18) {
             ForEach(Array(items.enumerated()), id: \.element.objectID) { i, item in
                 MattedPrint(item: item, tilt: Double((i * 37) % 7) - 3) { viewing = item }
+                    .dropIn(i, tilt: Double((i * 37) % 7) - 3)
                     .contextMenu {
                         Button(item.isFavorite ? "Remove favorite" : "Favorite") { store.toggleFavorite(item) }
                         Button("Delete", role: .destructive) { store.delete(item) }
@@ -146,6 +148,7 @@ struct MomentView: View {
                     Text((note.createdAt ?? Date()).formatted(date: .omitted, time: .shortened)).font(.num(11)).foregroundStyle(Theme.inkMute)
                 }
                 .padding(.vertical, 12).overlay(alignment: .top) { Hairline() }
+                .transition(.opacity.combined(with: .offset(y: 8)))
                 .contextMenu { if note.authorID == store.identity.authorID { Button("Delete note", role: .destructive) { store.delete(note) } } }
             }
             HStack(spacing: 8) {
@@ -154,7 +157,7 @@ struct MomentView: View {
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .background(.white.opacity(0.7), in: RoundedRectangle(cornerRadius: 9, style: .continuous)).hairlineBorder(9)
                 FRButton("Post", size: .small, disabled: noteText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
-                    store.addNote(noteText, to: moment); noteText = ""
+                    withAnimation(Motion.gentle) { store.addNote(noteText, to: moment) }; noteText = ""
                 }
             }
             .padding(.top, 12).overlay(alignment: .top) { Hairline() }
