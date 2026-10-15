@@ -25,7 +25,9 @@ struct HearthView: View {
     private var years: [Int] { Array(Set(moments.compactMap { $0.date.map { Calendar.current.component(.year, from: $0) } })).sorted(by: >) }
     private var year: Int { app.year.flatMap { years.contains($0) ? $0 : nil } ?? years.first ?? Calendar.current.component(.year, from: Date()) }
     private var yearMoments: [Moment] { moments.filter { $0.date.map { Calendar.current.component(.year, from: $0) == year } ?? false } }
-    private var summaries: [MomentSummary] { yearMoments.map(\.summary) }
+    /// Summaries are rebuilt once per render; helpers below read this cache instead of recomputing.
+    @State private var cache = SummaryCache()
+    private var summaries: [MomentSummary] { cache.summaries(for: yearMoments) }
     private func matches(_ m: MomentSummary) -> Bool { Catalog.matches(m, selected: app.selectedPeople, query: app.query) }
     private var active: [MomentSummary] { summaries.filter(matches) }
     private var stage: MomentSummary? { Catalog.stageMoment(summaries, preferred: app.stageMomentID ?? app.duoMoment?.id, matching: matches) }
@@ -240,5 +242,20 @@ struct EmptyHearth: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(alignment: .top) { Rectangle().fill(Theme.hair2).frame(height: 0.5) }
         .overlay(alignment: .bottom) { Rectangle().fill(Theme.hair2).frame(height: 0.5) }
+    }
+}
+
+/// Holds the last computed summaries and reuses them while the moments and their contents are unchanged.
+final class SummaryCache {
+    private var key: [String] = []
+    private var value: [MomentSummary] = []
+
+    func summaries(for moments: [Moment]) -> [MomentSummary] {
+        // Moment and media changes bump the object's version through Core Data's change tracking.
+        let newKey = moments.map { m in
+            "\(m.objectID.uriRepresentation().absoluteString)|\(m.title ?? "")|\(m.place ?? "")|\(m.isFeatured)|\(m.media?.count ?? 0)|\(m.people?.count ?? 0)|\(m.quote ?? "")"
+        }
+        if newKey != key { key = newKey; value = moments.map(\.summary) }
+        return value
     }
 }

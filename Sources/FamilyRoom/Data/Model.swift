@@ -40,9 +40,12 @@ import Foundation
         for f in faces ?? [] { if let item = f.media { items.insert(item) } }
         return items.count
     }
-    var summary: PersonSummary {
+    var summary: PersonSummary { summary(withCount: true) }
+
+    /// Counting photos walks every moment the person is in; avatars and chips never show the count.
+    func summary(withCount: Bool) -> PersonSummary {
         PersonSummary(id: id ?? UUID(), name: displayName, role: role ?? "", toneHex: toneHex ?? "B86348",
-                      accentHex: accentHex ?? "F0BFA8", isFaceGroup: isFaceGroup, photoCount: photoCount)
+                      accentHex: accentHex ?? "F0BFA8", isFaceGroup: isFaceGroup, photoCount: withCount ? photoCount : 0)
     }
 }
 
@@ -63,8 +66,8 @@ import Foundation
 
     var displayTitle: String { (title ?? "").isEmpty ? Catalog.defaultMomentTitle(date ?? Date()) : title! }
     var mediaList: [MediaItem] { (media ?? []).sorted { ($0.capturedAt ?? .distantPast) < ($1.capturedAt ?? .distantPast) } }
-    var photoCount: Int { (media ?? []).filter { $0.kind != MediaItem.videoKind }.count }
-    var videoCount: Int { (media ?? []).filter { $0.kind == MediaItem.videoKind }.count }
+    var photoCount: Int { (media ?? []).reduce(0) { $1.kind == MediaItem.videoKind ? $0 : $0 + 1 } }
+    var videoCount: Int { (media ?? []).reduce(0) { $1.kind == MediaItem.videoKind ? $0 + 1 : $0 } }
     var noteList: [Note] { (notes ?? []).sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) } }
     var peopleList: [Person] { (people ?? []).sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) } }
     var cover: MediaItem? { mediaList.first(where: \.isFavorite) ?? mediaList.first }
@@ -73,7 +76,7 @@ import Foundation
 
     var summary: MomentSummary {
         MomentSummary(id: id ?? UUID(), title: displayTitle, date: date ?? Date(), place: place, quote: quote,
-                      isFeatured: isFeatured, people: peopleList.map(\.summary),
+                      isFeatured: isFeatured, people: peopleList.map { $0.summary(withCount: false) },
                       photoCount: photoCount, videoCount: videoCount)
     }
 }
