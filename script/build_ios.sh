@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
+# Build the iOS app for the simulator. Pass a simulator name to also install and launch it.
 set -euo pipefail
-TASK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$TASK_ROOT"
-source "$TASK_ROOT/script/rust_env.sh"
-./script/build_core.sh
-rustup target add aarch64-apple-ios aarch64-apple-ios-sim
-IPHONEOS_DEPLOYMENT_TARGET=17.0 rustup run 1.98.0 cargo build -p family-core --release --target aarch64-apple-ios
-IPHONEOS_DEPLOYMENT_TARGET=17.0 rustup run 1.98.0 cargo build -p family-core --release --target aarch64-apple-ios-sim
-mkdir -p Generated/Apple
-TASK_FRAMEWORK="$TASK_ROOT/Generated/Apple/FamilyCoreNative.xcframework"
-if [[ -d "$TASK_FRAMEWORK" ]]; then rm -r "$TASK_FRAMEWORK"; fi
-xcodebuild -create-xcframework \
-  -library target/aarch64-apple-ios/release/libfamily_core.a -headers Generated/Swift \
-  -library target/aarch64-apple-ios-sim/release/libfamily_core.a -headers Generated/Swift \
-  -output "$TASK_FRAMEWORK"
-xcodegen generate --spec platforms/apple/project.yml
-xcodebuild -project platforms/apple/FamilyRoom.xcodeproj -scheme FamilyRoom \
-  -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/FamilyRoom-iOS-build \
-  CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- ARCHS=arm64 ONLY_ACTIVE_ARCH=YES build
+cd "$(dirname "$0")/.."
+xcodegen generate --quiet
+DERIVED="${FAMILY_ROOM_DERIVED:-$HOME/Library/Caches/com.familyroom.build}"
+DEVICE="${1:-}"
+xcodebuild -project FamilyRoom.xcodeproj -scheme FamilyRoom-iOS -configuration Debug \
+  -destination "generic/platform=iOS Simulator" -derivedDataPath "$DERIVED" \
+  CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= -quiet build
+APP="$DERIVED/Build/Products/Debug-iphonesimulator/Family Room.app"
+if [[ -n "$DEVICE" ]]; then
+  xcrun simctl boot "$DEVICE" 2>/dev/null || true
+  xcrun simctl install "$DEVICE" "$APP"
+  xcrun simctl launch "$DEVICE" com.familyroom.app
+fi
+echo "$APP"

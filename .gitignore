@@ -1,26 +1,12 @@
-# macOS
 .DS_Store
-
-# Xcode
 DerivedData/
 build/
-*.xcuserstate
-xcuserdata/
-*.xcuserdatad
-
-# Swift Package Manager
 .build/
 .swiftpm/
-target/
+*.xcuserstate
+xcuserdata/
+FamilyRoom.xcodeproj/
+Config/Signing.xcconfig
 dist/
+target/
 Generated/
-platforms/apple/FamilyRoom.xcodeproj/
-platforms/android/app/src/main/jniLibs/
-platforms/android/app/build/
-.gradle/
-local.properties
-*.frbackup
-*.frroom
-*.frblob
-*.partial
-recovery.key

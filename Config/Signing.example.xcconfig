@@ -1,0 +1,3 @@
+// Copy to Config/Signing.xcconfig (ignored by git) and set your Apple Developer team.
+// iCloud, CloudKit sharing and push need a real team; without one the app runs with a local-only library.
+DEVELOPMENT_TEAM =
