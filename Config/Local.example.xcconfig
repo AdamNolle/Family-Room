@@ -1,0 +1,3 @@
+// Copy to Config/Local.xcconfig and set your Apple Developer team ID.
+// iCloud sync, sharing and push need a team; without one the app keeps its library on the device.
+DEVELOPMENT_TEAM = ABCDE12345

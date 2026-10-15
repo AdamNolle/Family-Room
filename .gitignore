@@ -1,12 +1,12 @@
 .DS_Store
-DerivedData/
-build/
 .build/
 .swiftpm/
-*.xcuserstate
+DerivedData/
+build/
 xcuserdata/
-FamilyRoom.xcodeproj/
-Config/Signing.xcconfig
-dist/
-target/
-Generated/
+*.xcuserstate
+Config/Local.xcconfig
+# Local tool state
+.claude/
+.serena/
+.codex/

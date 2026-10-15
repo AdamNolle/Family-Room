@@ -1,15 +1,14 @@
 name: Apple builds
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  apple:
+  build-and-test:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - run: brew install xcodegen
-      - run: cp Config/Signing.example.xcconfig Config/Signing.xcconfig
-      - run: ./script/verify.sh
+      - run: swift Scripts/build.swift verify

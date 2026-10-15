@@ -4,7 +4,7 @@ Everything below the line "Needs your Apple Developer team" requires an account;
 
 ## Ready in the repository
 
-- App icon for iOS and macOS (`Support/Assets.xcassets`, regenerate with `swift Support/IconSource/render_icon.swift <dir>`).
+- App icon for iOS and macOS (`Support/Assets.xcassets`, regenerate with `swift Scripts/build.swift icon`).
 - Privacy manifest (`Support/PrivacyInfo.xcprivacy`): no tracking, no collected data, reasons for UserDefaults and file timestamps.
 - Entitlements per platform (`Support/FamilyRoom-iOS.entitlements`, `Support/FamilyRoom-macOS.entitlements`) for CloudKit, push and iCloud key-value storage. The Mac build is sandboxed with hardened runtime.
 - `ITSAppUsesNonExemptEncryption` is `false`: the app uses only Apple's own encryption through iCloud.
@@ -12,7 +12,7 @@ Everything below the line "Needs your Apple Developer team" requires an account;
 
 ## Needs your Apple Developer team
 
-1. Copy `Config/Signing.example.xcconfig` to `Config/Signing.xcconfig` and set `DEVELOPMENT_TEAM`.
+1. Copy `Config/Local.example.xcconfig` to `Config/Local.xcconfig` and set `DEVELOPMENT_TEAM`.
 2. In Certificates, Identifiers & Profiles, register `com.familyroom.app` with iCloud (CloudKit) and Push Notifications, and create the container `iCloud.com.familyroom.app`.
 3. Run a Debug build on two devices signed in to different Apple Accounts. Create a Room on one, invite the other from Settings, accept, and confirm photos, notes and likes appear on both. Faces and films are computed on each device and arrive as Room data.
 4. In the CloudKit Console, deploy the development schema to production once step 3 passes. Release builds use the production environment.

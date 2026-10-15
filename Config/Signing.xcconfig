@@ -1,0 +1,4 @@
+// Shared signing settings. Leave DEVELOPMENT_TEAM empty here.
+// To turn on iCloud, copy Local.example.xcconfig to Local.xcconfig (ignored by git) and set your team there.
+DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"
