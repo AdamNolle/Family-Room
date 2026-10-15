@@ -22,6 +22,8 @@ targets:
     platform: [iOS, macOS]
     sources:
       - path: Sources/FamilyRoom
+      - path: Support/Assets.xcassets
+      - path: Support/PrivacyInfo.xcprivacy
     info:
       path: Support/Info.plist
       properties:
@@ -52,6 +54,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: false
         ENABLE_PREVIEWS: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: ""
   FamilyRoomTests:
     type: bundle.unit-test
