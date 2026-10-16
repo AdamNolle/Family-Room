@@ -171,7 +171,7 @@ struct SearchField: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass").font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.inkMute)
+            Image(systemName: "magnifyingglass").font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.inkMute).accessibilityHidden(true)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
                 .font(.sans(13.5))

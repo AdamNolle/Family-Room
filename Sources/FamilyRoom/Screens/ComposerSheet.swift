@@ -107,7 +107,10 @@ struct ComposerSheet: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .accessibilityAddTraits(on ? .isSelected : [])
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(media[c.id]?.isVideo == true ? "Video" : "Photo"), \(Catalog.dayLabel(c.signals.capturedAt)), \(c.reason)")
+                    .accessibilityValue(on ? "In the film" : "Left out")
+                    .accessibilityAddTraits(on ? [.isButton, .isSelected] : .isButton)
                 }
             }
             timeline.padding(.top, 18)

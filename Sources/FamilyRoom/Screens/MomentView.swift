@@ -128,6 +128,7 @@ struct MomentView: View {
             }
             .buttonStyle(PressScale())
             .padding(6).padding(.bottom, 10)
+            .accessibilityLabel("Add photos to this moment")
         }
         .padding(.horizontal, 6).padding(.vertical, 4)
     }
@@ -189,6 +190,14 @@ struct MattedPrint: View {
     var tilt: Double
     var action: () -> Void
     @State private var hover = false
+
+    private var printLabel: String {
+        var parts = [item.isVideo ? "Video, \(Catalog.duration(item.duration))" : "Photo"]
+        if let date = item.capturedAt { parts.append(date.formatted(date: .omitted, time: .shortened)) }
+        if let who = item.addedByName { parts.append("added by \(who)") }
+        if item.isFavorite { parts.append("favorite") }
+        return parts.joined(separator: ", ")
+    }
     var body: some View {
         Button(action: action) {
             MediaThumb(item: item, maxSide: 600)
@@ -207,6 +216,7 @@ struct MattedPrint: View {
         }
         .buttonStyle(PressScale())
         .onHoverIfAvailable { hover = $0 }
-        .accessibilityLabel(item.isVideo ? "Video" : "Photo")
+        .accessibilityLabel(printLabel)
+        .accessibilityHint("Opens full size")
     }
 }

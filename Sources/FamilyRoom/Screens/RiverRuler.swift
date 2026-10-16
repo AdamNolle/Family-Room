@@ -66,9 +66,20 @@ struct RiverRuler: View {
             .frame(height: height)
         }
         .onAppear { grown = true }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("River of time")
         .accessibilityValue(current.map { "\($0.title), \(Catalog.dayLabel($0.date))" } ?? "")
+        .accessibilityHint("Swipe up or down to move between moments")
+        .accessibilityAdjustableAction { direction in
+            let active = moments.filter(matches).sorted { $0.date < $1.date }
+            guard !active.isEmpty else { return }
+            let index = current.flatMap { c in active.firstIndex { $0.id == c.id } } ?? 0
+            switch direction {
+            case .increment: if index + 1 < active.count { onPick(active[index + 1]) }
+            case .decrement: if index > 0 { onPick(active[index - 1]) }
+            @unknown default: break
+            }
+        }
     }
 
     private func scrub(fraction: Double) {

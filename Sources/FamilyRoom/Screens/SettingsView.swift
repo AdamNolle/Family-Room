@@ -119,6 +119,7 @@ struct SettingsView: View {
                             Image(systemName: "ellipsis").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkMute).frame(width: 24, height: 24)
                         }
                         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+                        .accessibilityLabel("Options for \(m.name)")
                     }
                 }
                 .padding(.horizontal, 18).frame(minHeight: 60)
@@ -132,6 +133,7 @@ struct SettingsView: View {
                 if i > 0 { Hairline() }
                 HStack(spacing: 14) {
                     Image(systemName: r == room ? "house.fill" : "house").foregroundStyle(r == room ? Theme.warm : Theme.inkMute).frame(width: 30)
+                        .accessibilityHidden(true)
                     if r == room {
                         TextField("Room name", text: $roomName).textFieldStyle(.plain).font(.sans(14, .semibold)).foregroundStyle(Theme.ink)
                             .onSubmit { store.rename(room, to: roomName) }
@@ -147,13 +149,14 @@ struct SettingsView: View {
                             else { Button("Leave Room", role: .destructive) { confirmLeave = true } }
                         } label: { Image(systemName: "ellipsis").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.inkMute).frame(width: 24, height: 24) }
                         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+                        .accessibilityLabel("Room options")
                     }
                 }
                 .padding(.horizontal, 18).frame(minHeight: 60)
             }
             Hairline()
             HStack(spacing: 14) {
-                Image(systemName: "plus").foregroundStyle(Theme.inkMute).frame(width: 30)
+                Image(systemName: "plus").foregroundStyle(Theme.inkMute).frame(width: 30).accessibilityHidden(true)
                 TextField("New Room", text: $newRoomName).textFieldStyle(.plain).font(.sans(14)).foregroundStyle(Theme.ink)
                     .onSubmit(createRoom)
                 FRButton("Create", size: .small, disabled: newRoomName.trimmingCharacters(in: .whitespaces).isEmpty, action: createRoom)

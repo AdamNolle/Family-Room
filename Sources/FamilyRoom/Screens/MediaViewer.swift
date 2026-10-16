@@ -20,10 +20,10 @@ struct MediaViewer: View {
             }
             VStack {
                 HStack {
-                    Button { dismiss() } label: { Image(systemName: "xmark").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain)
+                    Button { dismiss() } label: { Image(systemName: "xmark").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain).accessibilityLabel("Close")
                     Spacer()
-                    Button { store.toggleFavorite(item) } label: { Image(systemName: item.isFavorite ? "heart.fill" : "heart").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain)
-                    Button { confirmDelete = true } label: { Image(systemName: "trash").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain)
+                    Button { store.toggleFavorite(item) } label: { Image(systemName: item.isFavorite ? "heart.fill" : "heart").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain).accessibilityLabel(item.isFavorite ? "Remove from favorites" : "Add to favorites")
+                    Button { confirmDelete = true } label: { Image(systemName: "trash").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain).accessibilityLabel("Delete")
                 }
                 .padding(16)
                 Spacer()
@@ -65,9 +65,9 @@ struct StoryPlayer: View {
             if let player { VideoPlayer(player: player).ignoresSafeArea() } else { ProgressView().tint(.white) }
             VStack {
                 HStack {
-                    Button { dismiss() } label: { Image(systemName: "xmark").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain)
+                    Button { dismiss() } label: { Image(systemName: "xmark").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain).accessibilityLabel("Close")
                     Spacer()
-                    if let tempURL { ShareLink(item: tempURL) { Image(systemName: "square.and.arrow.up").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain) }
+                    if let tempURL { ShareLink(item: tempURL) { Image(systemName: "square.and.arrow.up").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(width: 36, height: 36).background(.white.opacity(0.14), in: Circle()) }.buttonStyle(.plain).accessibilityLabel("Share film") }
                 }
                 .padding(16)
                 Spacer()

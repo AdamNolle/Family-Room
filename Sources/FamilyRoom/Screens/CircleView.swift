@@ -95,6 +95,9 @@ struct CircleView: View {
                     .frame(width: 84)
                 }
                 .buttonStyle(PressScale())
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(group.displayName), face group, \(group.photoCount > 0 ? "\(group.photoCount) photos" : "not yet matched")")
+                .accessibilityAddTraits(.isButton)
                 .entrance(fi + members.count)
             }
             Button { Task { await store.scanFaces(in: room) } } label: {
@@ -108,6 +111,8 @@ struct CircleView: View {
             }
             .buttonStyle(PressScale())
             .disabled(store.faceScanProgress != nil)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(faces.isEmpty ? "Find faces in this Room's photos" : "Check new photos for faces")
         }
     }
 
