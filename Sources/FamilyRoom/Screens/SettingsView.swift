@@ -48,6 +48,10 @@ struct SettingsView: View {
                     Text("Privacy").labelStyle().padding(.top, 28)
                     Text("Faces, best clips and stories are worked out on this \(DeviceWord.current). Photos stay in your family's iCloud.")
                         .font(.display(22)).italic().lineSpacing(2).foregroundStyle(Theme.inkSoft).padding(.top, 12).frame(maxWidth: 420, alignment: .leading)
+                    if let folder = store.persistence.setAsideFolder {
+                        Text("The library on this \(DeviceWord.current) could not be opened, so a fresh one was started. The old files are kept in “\(folder.lastPathComponent)” inside Family Room's support folder.")
+                            .font(.sans(12.5)).lineSpacing(3).foregroundStyle(Theme.warm).padding(.top, 12).frame(maxWidth: 420, alignment: .leading)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 VStack(alignment: .leading, spacing: 0) {
