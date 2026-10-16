@@ -113,7 +113,7 @@ struct FRButton: View {
             .font(.sans(size == .small ? 12.5 : 13.5, .semibold))
             .foregroundStyle(style == .solid ? Theme.paper2 : Theme.ink)
             .padding(.horizontal, size == .small ? 10 : 15)
-            .frame(height: size == .small ? 28 : 34)
+            .frame(minHeight: size == .small ? 28 : 34)
             .background {
                 if style == .solid { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Theme.ink) }
                 else { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(.white.opacity(0.55)).hairlineBorder(9) }
@@ -186,7 +186,7 @@ struct SearchField: View {
             }
         }
         .padding(.leading, 12).padding(.trailing, 8)
-        .frame(height: tall ? 44 : 34)
+        .frame(minHeight: tall ? 44 : 34)
         .background(.white.opacity(0.55), in: RoundedRectangle(cornerRadius: tall ? 12 : 9, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: tall ? 12 : 9, style: .continuous).strokeBorder(focused ? Theme.warm : Theme.hair2, lineWidth: focused ? 1 : 0.5))
     }
@@ -202,7 +202,7 @@ struct FieldBox: View {
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
                 .font(.sans(15, .medium)).foregroundStyle(Theme.ink)
-                .padding(.horizontal, 12).frame(height: 40)
+                .padding(.horizontal, 12).frame(minHeight: 40)
                 .background(.white, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 .hairlineBorder(9)
         }
@@ -374,7 +374,7 @@ struct IndexRow: View {
                 if moment.people.count > 2 { Text("+\(moment.people.count - 2)").font(.label(10.5)).foregroundStyle(Theme.inkMute) }
             }
             .padding(.leading, 10).padding(.trailing, 6)
-            .frame(height: 44)
+            .frame(minHeight: 44)
             .background(selected ? Color.white.opacity(0.62) : .clear)
             .overlay(alignment: .leading) { Rectangle().fill(Theme.warm).frame(width: 2).padding(.vertical, 8).scaleEffect(y: selected ? 1 : 0, anchor: .center) }
             .opacity(dim ? 0.28 : 1)

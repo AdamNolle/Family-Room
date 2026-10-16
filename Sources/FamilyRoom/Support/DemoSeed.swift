@@ -53,10 +53,10 @@ enum DemoSeed {
                 moment.people = Set(m.3.map { people[$0] })
                 if m.5 != nil {
                     for (who, text) in [(4, "best day of my life"), (0, "so happy with my whole family")] {
-                        let note = Note(context: store.context)
+                        let note = store.insert(Note.self, near: moment)
                         note.id = UUID(); note.text = text; note.createdAt = date.addingTimeInterval(3600); note.authorName = people[who].displayName; note.authorID = "demo-\(who)"; note.moment = moment
                     }
-                    for who in 0..<4 { let r = Reaction(context: store.context); r.id = UUID(); r.createdAt = date; r.authorName = people[who].displayName; r.authorID = "demo-\(who)"; r.moment = moment }
+                    for who in 0..<4 { let r = store.insert(Reaction.self, near: moment); r.id = UUID(); r.createdAt = date; r.authorName = people[who].displayName; r.authorID = "demo-\(who)"; r.moment = moment }
                 }
             }
         }

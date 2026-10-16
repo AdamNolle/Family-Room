@@ -91,7 +91,7 @@ extension RoomStore {
             guard let data = item.data else { continue }
             let found = (try? await Task.detached(priority: .utility) { try await FaceScanner.detect(in: data) }.value) ?? []
             for face in found {
-                let obs = FaceObservation(context: context)
+                let obs = insert(FaceObservation.self, near: item)
                 obs.id = UUID(); obs.confidence = face.confidence
                 obs.boxX = face.box.minX; obs.boxY = face.box.minY; obs.boxWidth = face.box.width; obs.boxHeight = face.box.height
                 obs.crop = face.crop; obs.featurePrint = face.featurePrint; obs.media = item

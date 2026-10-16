@@ -8,6 +8,7 @@ import UIKit
 struct RootView: View {
     @EnvironmentObject private var store: RoomStore
     @StateObject private var app = AppState()
+    @Environment(\.dynamicTypeSize) private var textSize
     @State private var picked: [PhotosPickerItem] = []
     @State private var fileImport = false
 
@@ -20,6 +21,9 @@ struct RootView: View {
                 WelcomeView()
             }
         }
+        // Text sizes are resolved when views are built, so rebuild the screens when the setting changes.
+        .id(textSize)
+        .dynamicTypeSize(.xSmall ... .accessibility2)
         .tint(Theme.warm)
         .preferredColorScheme(.light)
         .sheet(item: $app.composeMoment) { moment in composer(moment: moment) }
@@ -245,8 +249,8 @@ struct TabBar: View {
                 let on = app.tab == tab && app.path.isEmpty
                 Button { withAnimation(Motion.snappy) { app.go(tab) }; Feedback.tick() } label: {
                     VStack(spacing: 3) {
-                        Text(tab.number).font(.label(9.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint)
-                        Text(tab.title).font(.sans(12, .semibold)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
+                        Text(tab.number).font(.fixedLabel(9.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint)
+                        Text(tab.title).font(.fixedSans(12, .semibold)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background {
@@ -260,6 +264,7 @@ struct TabBar: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(tab.longTitle)
                 .accessibilityAddTraits(on ? .isSelected : [])
+                .accessibilityShowsLargeContentViewer { Text(tab.longTitle) }
             }
         }
         .padding(6)
@@ -484,8 +489,8 @@ struct DuoShell: View {
                 let on = app.tab == tab
                 Button { withAnimation(Motion.snappy) { app.go(tab) }; Feedback.tick() } label: {
                     VStack(spacing: 3) {
-                        Text(tab.number).font(.label(9.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint)
-                        Text(tab.title).font(.sans(11, .semibold)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
+                        Text(tab.number).font(.fixedLabel(9.5)).foregroundStyle(on ? Theme.warm : Theme.inkFaint)
+                        Text(tab.title).font(.fixedSans(11, .semibold)).foregroundStyle(on ? Theme.ink : Theme.inkSoft)
                     }
                     .frame(maxWidth: .infinity).frame(height: 58)
                     .background {
@@ -493,6 +498,8 @@ struct DuoShell: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(tab.longTitle)
+                .accessibilityShowsLargeContentViewer { Text(tab.longTitle) }
             }
         }
         .padding(8).frame(width: 68).frame(maxHeight: .infinity)

@@ -15,6 +15,22 @@ final class Persistence {
     private(set) var sharedStore: NSPersistentStore?
     var viewContext: NSManagedObjectContext { container.viewContext }
 
+    /// Tests: a private and a shared store, both local, wired like a participant's device.
+    init(testingWithSharedStore: Bool) {
+        let container = NSPersistentCloudKitContainer(name: "FamilyRoomTest", managedObjectModel: FamilyRoomModel.shared)
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("fr-test-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+        container.persistentStoreDescriptions = ["private", "shared"].map { NSPersistentStoreDescription(url: base.appendingPathComponent("\($0).sqlite")) }
+        var stores: [String: NSPersistentStore] = [:]
+        container.loadPersistentStores { description, error in
+            precondition(error == nil, "Test stores failed to load: \(String(describing: error))")
+            stores[description.url!.deletingPathExtension().lastPathComponent] = container.persistentStoreCoordinator.persistentStore(for: description.url!)
+        }
+        self.container = container
+        privateStore = stores["private"]; sharedStore = stores["shared"]; cloudEnabled = false
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+    }
+
     init(inMemory: Bool = false) {
         let wantsCloud = !inMemory && ProcessInfo.processInfo.environment["FAMILY_ROOM_LOCAL_ONLY"] == nil && Persistence.isEntitledForCloud
         if wantsCloud, let loaded = Persistence.load(cloud: true, inMemory: false) {
@@ -86,6 +102,11 @@ final class Persistence {
             Persistence.log.error("Save failed: \(error.localizedDescription)")
             context.rollback()
         }
+    }
+
+    /// The store an object will be saved to, including objects not yet saved.
+    func store(for object: NSManagedObject) -> NSPersistentStore? {
+        object.objectID.persistentStore ?? (object.objectID.isTemporaryID ? nil : privateStore)
     }
 
     func isOwned(_ object: NSManagedObject) -> Bool {

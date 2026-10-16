@@ -33,6 +33,19 @@ final class RoomStore: ObservableObject {
         }
     }
 
+    // MARK: Inserting
+
+    /// Creates an object in the same store as `anchor`. A Room someone joined lives in the shared store.
+    /// Core Data would infer the store from the relationship at save time; assigning it up front keeps
+    /// the placement explicit, as Apple's CloudKit sharing sample does. SharedRoomTests covers both cases.
+    func insert<T: NSManagedObject>(_ type: T.Type, near anchor: NSManagedObject?) -> T {
+        let object = T(context: context)
+        if let store = anchor?.objectID.persistentStore ?? anchor.flatMap({ persistence.store(for: $0) }) {
+            context.assign(object, to: store)
+        }
+        return object
+    }
+
     // MARK: Rooms
 
     var rooms: [Room] {
@@ -85,7 +98,7 @@ final class RoomStore: ObservableObject {
     func moment(in room: Room, on date: Date) -> Moment {
         let day = Catalog.startOfDay(date)
         if let existing = room.moments?.first(where: { $0.date == day }) { return existing }
-        let m = Moment(context: context)
+        let m = insert(Moment.self, near: room)
         m.id = UUID(); m.date = day; m.createdAt = Date(); m.room = room
         return m
     }
@@ -114,7 +127,7 @@ final class RoomStore: ObservableObject {
     // MARK: Media
 
     func add(_ imported: ImportedMedia, to room: Room, momentOverride: Moment? = nil) -> MediaItem {
-        let item = MediaItem(context: context)
+        let item = insert(MediaItem.self, near: room)
         item.id = UUID(); item.kind = imported.isVideo ? MediaItem.videoKind : MediaItem.photoKind
         item.capturedAt = imported.capturedAt; item.addedAt = Date()
         item.addedByName = identity.nameOrFallback; item.addedByID = identity.authorID
@@ -147,7 +160,7 @@ final class RoomStore: ObservableObject {
 
     @discardableResult
     func createPerson(named name: String, role: String = "", faceGroup: Bool = false, in room: Room) -> Person {
-        let p = Person(context: context)
+        let p = insert(Person.self, near: room)
         p.id = UUID(); p.name = name.trimmingCharacters(in: .whitespaces); p.role = role
         p.isFaceGroup = faceGroup; p.createdAt = Date(); p.room = room
         let palette = Theme.personTones[(room.people?.count ?? 0) % Theme.personTones.count]
@@ -192,7 +205,7 @@ final class RoomStore: ObservableObject {
     func addNote(_ text: String, to moment: Moment) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        let n = Note(context: context)
+        let n = insert(Note.self, near: moment)
         n.id = UUID(); n.text = trimmed; n.createdAt = Date()
         n.authorName = identity.nameOrFallback; n.authorID = identity.authorID; n.moment = moment
         save()
@@ -202,7 +215,7 @@ final class RoomStore: ObservableObject {
 
     func toggleLike(_ moment: Moment) {
         if let mine = moment.reactions?.first(where: { $0.authorID == identity.authorID }) { context.delete(mine) } else {
-            let r = Reaction(context: context)
+            let r = insert(Reaction.self, near: moment)
             r.id = UUID(); r.createdAt = Date(); r.authorName = identity.nameOrFallback; r.authorID = identity.authorID; r.moment = moment
         }
         save()
@@ -212,7 +225,7 @@ final class RoomStore: ObservableObject {
 
     @discardableResult
     func saveStory(title: String, subtitle: String, movie: Data, thumbnail: Data?, duration: Double, moment: Moment?, room: Room, weeklyReel: Date? = nil) -> Story {
-        let s = Story(context: context)
+        let s = insert(Story.self, near: room)
         s.id = UUID(); s.title = title; s.subtitle = subtitle; s.createdAt = Date(); s.duration = duration
         s.movie = movie; s.thumbnail = thumbnail; s.sourceMoment = moment; s.room = room
         s.isWeeklyReel = weeklyReel != nil; s.weekStart = weeklyReel

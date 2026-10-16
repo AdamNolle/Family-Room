@@ -1,5 +1,8 @@
 import SwiftUI
 import CoreText
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // Design tokens ported from the "Family Room - Devices v3" design (mac3.css + mobile.css).
 
@@ -67,22 +70,41 @@ enum TypeFaces {
     }
 }
 
+enum TextScale {
+    /// Scales a design size by the user's text-size setting (Dynamic Type). The Mac has no such setting.
+    static func scaled(_ size: CGFloat) -> CGFloat {
+        #if os(iOS)
+        // Cap at the second accessibility size; beyond it the layouts stop holding together.
+        let order: [UIContentSizeCategory] = [.extraSmall, .small, .medium, .large, .extraLarge, .extraExtraLarge, .extraExtraExtraLarge, .accessibilityMedium, .accessibilityLarge]
+        let current = UIApplication.shared.preferredContentSizeCategory
+        let category = order.contains(current) ? current : .accessibilityLarge
+        return UIFontMetrics(forTextStyle: .body).scaledValue(for: size, compatibleWith: UITraitCollection(preferredContentSizeCategory: category))
+        #else
+        return size
+        #endif
+    }
+}
+
 extension Font {
-    /// `.d` — the serif display face.
+    /// `.d` — the serif display face. Headlines grow with the text-size setting; the very large
+    /// numerals and titles (40 pt and up) stay at their designed size so layouts hold.
     static func display(_ size: CGFloat) -> Font {
         TypeFaces.register()
-        return .custom(TypeFaces.serifName, size: size)
+        return size >= 40 ? .custom(TypeFaces.serifName, fixedSize: size) : .custom(TypeFaces.serifName, size: size, relativeTo: .title2)
     }
     /// `.lbl` — small caps-style label.
     static func label(_ size: CGFloat = 11) -> Font {
-        .system(size: size, weight: .semibold).width(.condensed)
+        .system(size: TextScale.scaled(size), weight: .semibold).width(.condensed)
     }
     static func sans(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight)
+        .system(size: TextScale.scaled(size), weight: weight)
     }
     static func num(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight).monospacedDigit()
+        .system(size: TextScale.scaled(size), weight: weight).monospacedDigit()
     }
+    /// For chrome with a fixed height (tab bar, dock). Pair with `.accessibilityShowsLargeContentViewer()`.
+    static func fixedSans(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight) }
+    static func fixedLabel(_ size: CGFloat) -> Font { .system(size: size, weight: .semibold).width(.condensed) }
 }
 
 extension View {
