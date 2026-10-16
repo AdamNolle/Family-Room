@@ -64,6 +64,12 @@ enum DemoSeed {
         store.save()
     }
 
+    /// Callable from tests that are not on the main actor.
+    nonisolated static func gradientJPEGSync(_ colors: [UInt32], seed: Int) -> Data {
+        if Thread.isMainThread { return MainActor.assumeIsolated { gradientJPEG(colors, seed: seed) } }
+        return DispatchQueue.main.sync { MainActor.assumeIsolated { gradientJPEG(colors, seed: seed) } }
+    }
+
     static func gradientJPEG(_ colors: [UInt32], seed: Int) -> Data {
         let size = CGSize(width: 900, height: 600)
         let renderer = ImageRenderer(content: ZStack {

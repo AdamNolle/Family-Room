@@ -34,17 +34,20 @@ enum MediaImporter {
             let asset = AVURLAsset(url: tmp)
             let duration = (try? await asset.load(.duration).seconds) ?? 0
             var size = CGSize.zero
-            if let track = try? await asset.loadTracks(withMediaType: .video).first {
-                let natural = (try? await track.load(.naturalSize)) ?? .zero
-                let transform = (try? await track.load(.preferredTransform)) ?? .identity
-                size = natural.applying(transform); size = CGSize(width: abs(size.width), height: abs(size.height))
-            }
+            guard let track = try? await asset.loadTracks(withMediaType: .video).first else { throw ImportError.unreadable }
+            let natural = (try? await track.load(.naturalSize)) ?? .zero
+            let transform = (try? await track.load(.preferredTransform)) ?? .identity
+            size = natural.applying(transform); size = CGSize(width: abs(size.width), height: abs(size.height))
             let created = (try? await asset.load(.creationDate)?.load(.dateValue)) ?? nil
             let thumb = await videoThumbnail(asset: asset)
             return ImportedMedia(data: data, thumbnail: thumb, isVideo: true, capturedAt: created ?? fallbackDate,
                                  pixelSize: size, duration: duration, fileExtension: ext.isEmpty ? "mov" : ext, photoIdentifier: photoIdentifier)
         }
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { throw ImportError.unreadable }
+        // ImageIO opens any bytes; require a recognized image type with at least one decodable frame.
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              CGImageSourceGetType(source) != nil, CGImageSourceGetCount(source) > 0,
+              CGImageSourceCreateImageAtIndex(source, 0, [kCGImageSourceShouldCache: false] as CFDictionary) != nil
+        else { throw ImportError.unreadable }
         let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] ?? [:]
         let width = (props[kCGImagePropertyPixelWidth] as? CGFloat) ?? 0
         let height = (props[kCGImagePropertyPixelHeight] as? CGFloat) ?? 0
