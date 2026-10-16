@@ -168,8 +168,8 @@ struct ComposerSheet: View {
     private func start() {
         phase = .stitch; progress = 0; error = nil
         let clips = picked.compactMap { c -> StoryRenderer.Clip? in
-            guard let m = media[c.id], let data = m.data else { return nil }
-            return StoryRenderer.Clip(data: data, isVideo: m.isVideo, fileExtension: m.fileExtension ?? "mov")
+            guard let m = media[c.id] else { return nil }
+            return StoryRenderer.Clip(isVideo: m.isVideo, fileExtension: m.fileExtension ?? "mov") { @MainActor in m.data }
         }
         let name = title.trimmingCharacters(in: .whitespaces)
         let subtitle = moment.map { "\(Catalog.dayLabel($0.date ?? Date())) · from \($0.displayTitle)" } ?? "\(Catalog.weekLabel(Catalog.weekStart())) · weekly reel"

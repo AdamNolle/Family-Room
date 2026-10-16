@@ -8,10 +8,20 @@ enum StoryRenderer {
     static let renderSize = CGSize(width: 1920, height: 1080)
     static let fps: Int32 = 30
 
+    /// A clip's original is read only when its turn comes and released once it is on disk,
+    /// so a film made from several long videos never holds them all in memory.
     struct Clip {
-        var data: Data
+        var load: () async -> Data?
         var isVideo: Bool
         var fileExtension: String
+
+        init(isVideo: Bool, fileExtension: String, load: @escaping () async -> Data?) {
+            self.load = load; self.isVideo = isVideo; self.fileExtension = fileExtension
+        }
+
+        init(data: Data, isVideo: Bool, fileExtension: String) {
+            self.init(isVideo: isVideo, fileExtension: fileExtension) { data }
+        }
     }
 
     enum RenderError: LocalizedError {
@@ -38,10 +48,11 @@ enum StoryRenderer {
         for (index, clip) in clips.enumerated() {
             try Task.checkCancellation()
             let url = work.appendingPathComponent("clip-\(index).\(clip.isVideo ? clip.fileExtension : "mp4")")
+            guard let data = await clip.load() else { continue }
             if clip.isVideo {
-                try clip.data.write(to: url)
+                try data.write(to: url)
             } else {
-                guard let image = MediaImporter.decode(clip.data, maxSide: 2200) else { continue }
+                guard let image = MediaImporter.decode(data, maxSide: 2200) else { continue }
                 if poster == nil { poster = MediaImporter.jpeg(image) }
                 try await writeStill(image, duration: secondsPerClip, destination: url)
             }
